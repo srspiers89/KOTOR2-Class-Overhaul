@@ -366,7 +366,9 @@ void main()
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
             }
 
-            if(GetAttackTarget(GetLastDamager()) == OBJECT_SELF)
+            object oDamager = GetLastDamager();
+
+            if(GetAttackTarget(oDamager) == OBJECT_SELF && GetWeaponRanged(GetLastWeaponUsed(oDamager)))
                 MultiTarget();
         }
         break;
@@ -383,7 +385,9 @@ void main()
                 SignalEvent(OBJECT_SELF, EventUserDefined(1007));
             }
 
-            if(GetAttackTarget(GetLastDamager()) == OBJECT_SELF)
+            object oDamager = GetLastDamager();
+
+            if(GetAttackTarget(oDamager) == OBJECT_SELF && GetWeaponRanged(GetLastWeaponUsed(oDamager)))
                 MultiTarget();
         }
         break;
@@ -898,45 +902,54 @@ void main()
 void MultiTarget()
 {
     object oDamager = GetLastDamager();
-    effect eDamage = EffectDamage(GetTotalDamageDealt() / 2, DAMAGE_TYPE_UNIVERSAL);
-    int nDamage = GetTotalDamageDealt() / 2;
 
+    int nDamage = GetTotalDamageDealt() / 4;
+    if(nDamage < 1)
+        nDamage = 1;
+
+    // Get damage type of base Item
+    int oWeapon = GetBaseItemType(GetLastWeaponUsed(oDamager));
+    int nDamageType;
+
+    if(oWeapon == BASE_ITEM_BLASTER_PISTOL ||
+       oWeapon == BASE_ITEM_HEAVY_BLASTER ||
+       oWeapon == BASE_ITEM_HOLD_OUT_BLASTER ||
+       oWeapon == BASE_ITEM_BOWCASTER ||
+       oWeapon == BASE_ITEM_BLASTER_CARBINE ||
+       oWeapon == BASE_ITEM_REPEATING_BLASTER ||
+       oWeapon == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
+       oWeapon == BASE_ITEM_BLASTER_RIFLE
+    )
+        nDamageType = 4096;
+
+    else if(oWeapon == BASE_ITEM_ION_BLASTER ||
+            oWeapon == BASE_ITEM_ION_RIFLE
+    )
+        nDamageType = 2048;
+
+    else if(oWeapon == BASE_ITEM_DISRUPTER_PISTOL ||
+            oWeapon == BASE_ITEM_DISRUPTER_RIFLE
+    )
+        nDamageType = 8;
+
+    else if(oWeapon == BASE_ITEM_SONIC_PISTOL ||
+            oWeapon == BASE_ITEM_SONIC_RIFLE
+    )
+        nDamageType = 1024;
+
+    // Get the target of the richochet
     object oTarget = GetFirstObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(OBJECT_SELF), FALSE, OBJECT_TYPE_CREATURE);
 
     while(GetIsObjectValid(oTarget))
     {
         if(GetIsEnemy(oTarget, oDamager) && oTarget != GetAttackTarget(oDamager) && oTarget != GetLastHostileTarget(oDamager)) // Only richochet once
         {
-            AssignCommand(oDamager, ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(nDamage, DAMAGE_TYPE_UNIVERSAL), oTarget));
+            AssignCommand(oDamager, ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(nDamage, nDamageType), oTarget));
             break;
         }
         else
             oTarget = GetNextObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE);
     }
-
-    /*
-    int nDamage = 0;
-    int nDamageType = 1;
-
-    effect eLink1;
-
-    while (nDamageType < 4096)
-    {
-        E
-    }
-
-    while (nDamage == 0)
-    {
-        nDamage = GetDamageDealtByType(nDamageType) / 4;
-        if(nDamage > 0)
-            break;
-        else
-            nDamageType = nDamageType * 2;
-    }
-
-    //int nDamage = GetTotalDamageDealt() / 4;
-    SetLocalNumber(oDamager, 25, nDamage);
-    */
 
     //if(GetAttackTarget(oDamager) == OBJECT_SELF)
     //    ExecuteScript("multitarget", oDamager);

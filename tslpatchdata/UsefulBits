@@ -2,6 +2,10 @@
 // * Returns OBJECT_INVALID if the caller is not a valid object.
 object GetLastDamager();
 
+// 316: Get the attack target of oCreature.
+// This only works when oCreature is in combat.
+object GetAttackTarget(object oCreature=OBJECT_SELF);
+
 // 722. GetLastAttackAction
 // Returns the last attack action for a given object
 int GetLastAttackAction(object oAttacker = OBJECT_SELF);
@@ -10,8 +14,18 @@ int GetLastAttackAction(object oAttacker = OBJECT_SELF);
 // Returns the last attack target for a given object
 object GetLastHostileTarget(object oAttacker = OBJECT_SELF);
 
+// 361: Get the target that the caller attempted to attack - this should be used in
+// conjunction with GetAttackTarget(). This value is set every time an attack is
+// made, and is reset at the end of combat.
+// * Returns OBJECT_INVALID if the caller is not a valid creature.
+object GetAttemptedAttackTarget();
+
 int ACTION_ATTACKOBJECT       = 3;
 int ACTION_CASTSPELL          = 4;
+
+// 328: Get the last weapon that oCreature used in an attack.
+// * Returns OBJECT_INVALID if oCreature did not attack, or has no weapon equipped.
+object GetLastWeaponUsed(object oCreature);
 
 // 235: * Returns TRUE if oSource considers oTarget as an enemy.
 int GetIsEnemy(object oTarget, object oSource=OBJECT_SELF);
@@ -41,10 +55,6 @@ void FloatingTextStrRefOnCreature(int nStrRefToDisplay, object oCreatureToFloatA
 //   will see the floaty text, and only if they are within range (30 metres).
 void FloatingTextStringOnCreature(string sStringToDisplay, object oCreatureToFloatAbove, int bBroadcastToFaction=TRUE);
 
-// 328: Get the last weapon that oCreature used in an attack.
-// * Returns OBJECT_INVALID if oCreature did not attack, or has no weapon equipped.
-object GetLastWeaponUsed(object oCreature);
-
 // 140: * Returns TRUE if oCreature is a dead NPC, dead PC or a dying PC.
 int GetIsDead(object oCreature);
 
@@ -66,6 +76,9 @@ object GetLastWeaponUsed(object oCreature);
 // * Returns BASE_ITEM_INVALID if oItem is an invalid item.
 int GetBaseItemType(object oItem);
 
+// 345: Get the total amount of damage that has been dealt to the caller.
+int GetTotalDamageDealt();
+
 // 344: Get the amount of damage of type nDamageType that has been dealt to the caller.
 // - nDamageType: DAMAGE_TYPE_*
 int GetDamageDealtByType(int nDamageType);
@@ -75,3 +88,9 @@ int GetDamageDealtByType(int nDamageType);
 // - nMissEffect: if this is TRUE, a random vector near or past the target will
 //   be generated, on which to play the effect
 effect EffectVisualEffect(int nVisualEffectId, int nMissEffect=FALSE);
+
+// 6: Assign aActionToAssign to oActionSubject.
+// * No return value, but if an error occurs, the log file will contain
+//   "AssignCommand failed."
+//   (If the object doesn't exist, nothing happens.)
+void AssignCommand(object oActionSubject,action aActionToAssign);
