@@ -577,6 +577,11 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
             }
+
+            if(GetIsInCombat() && !GetSoloMode())
+                SetSoloMode(1);
+            else if(!GetIsInCombat() && GetSoloMode())
+                SetSoloMode(0);
         }
         break;
         case 2002: //KOTOR_HENCH_EVENT_ON_PERCEPTION
@@ -600,7 +605,10 @@ void main()
                            GetAttackTarget() == GetLastPerceived()) && GetArea(GetLastPerceived()) != GetArea(OBJECT_SELF))
                         {
                            ClearAllActions();
-                           GN_DetermineCombatRound();
+                           if(!GetSoloMode())
+                               SetSoloMode(1);
+                           //if( !IsObjectPartyMember(OBJECT_SELF) )
+                           //    GN_DetermineCombatRound();
                         }
                     }
                     //Do not bother checking the last target seen if already fighting
@@ -619,7 +627,10 @@ void main()
                                     //SetFacingPoint(GetPosition(GetLastPerceived()));
                                     //SpeakString("GEN_COMBAT_ACTIVE", TALKVOLUME_SILENT_TALK);
                                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_SHOUT);
-                                    GN_DetermineCombatRound();
+                                    if(!GetSoloMode())
+                                        SetSoloMode(1);
+                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                    //    GN_DetermineCombatRound();
                                 }
                             }
                         }
@@ -645,7 +656,12 @@ void main()
                 //{
                     Db_MyPrintString("GENERIC DEBUG *************** End of Combat Round: " + GN_ReturnDebugName(OBJECT_SELF));
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
-                    GN_DetermineCombatRound();
+                    if(GetIsInCombat() && !GetSoloMode())
+                        SetSoloMode(1);
+                    else if(!GetIsInCombat() && GetSoloMode())
+                        SetSoloMode(0);
+                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                    //    GN_DetermineCombatRound();
                 //}
             }
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
@@ -728,7 +744,8 @@ void main()
                             {
                                 if(!GetIsInCombat())
                                 {
-                                    GN_DetermineCombatRound();
+                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                    //    GN_DetermineCombatRound();
                                 }
                             }
                         }
@@ -748,6 +765,12 @@ void main()
         break;
         case 2006: //KOTOR_HENCH_EVENT_ON_DAMAGE
         {
+            if(GN_GetIsFighting(GetLastDamager()))
+            {
+                if(!GetSoloMode())
+                    SetSoloMode(1);
+            }
+
             if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF))
             {
                 if(GetFirstPC() == OBJECT_SELF &&
@@ -769,14 +792,18 @@ void main()
                             {
                                 if(!GetIsObjectValid(GetAttemptedAttackTarget()) && !GetIsObjectValid(GetAttemptedSpellTarget()) && !GetIsObjectValid(GetAttackTarget()) )
                                 {
-                                    GN_DetermineCombatRound();
+                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                    //   GN_DetermineCombatRound();
                                     if(!GN_GetIsFighting(OBJECT_SELF))
                                     {
                                         object oTarget = GetLastDamager();
                                         if(!GetObjectSeen(oTarget) && GetArea(OBJECT_SELF) == GetArea(oTarget))
                                         {
-                                            ActionMoveToLocation(GetLocation(oTarget), TRUE);
-                                            ActionDoCommand(GN_DetermineCombatRound());
+                                            //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                            //{
+                                            //     ActionMoveToLocation(GetLocation(oTarget), TRUE);
+                                            //     ActionDoCommand(GN_DetermineCombatRound());
+                                            //}
                                         }
                                     }
                                 }
@@ -794,7 +821,8 @@ void main()
                                (GetTotalDamageDealt() > (GetMaxHitPoints(OBJECT_SELF) / 4) ||
                                 (GetHitDice(oAttacker) - 2) > GetHitDice(oTarget) ) )
                             {
-                                GN_DetermineCombatRound(oAttacker);
+                                //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                //    GN_DetermineCombatRound(oAttacker);
                             }
                         }
                     }
