@@ -94,3 +94,15 @@ effect EffectVisualEffect(int nVisualEffectId, int nMissEffect=FALSE);
 //   "AssignCommand failed."
 //   (If the object doesn't exist, nothing happens.)
 void AssignCommand(object oActionSubject,action aActionToAssign);
+
+// 820
+// RWT-OEI 04/06/04
+// This returns TRUE or FALSE if there is a clear line of sight from
+// the source vector to the target vector. This is used in the AI to
+// help the creatures using ranged weapons find better places to shoot
+// when the player moves out of sight.
+int HasLineOfSight( vector vSource, vector vTarget, object oSource = OBJECT_INVALID, object oTarget = OBJECT_INVALID );
+
+// 27: Get the position of oTarget
+// * Return value on error: vector (0.0f, 0.0f, 0.0f)
+vector GetPosition(object oTarget);

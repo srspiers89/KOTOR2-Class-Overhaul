@@ -174,6 +174,7 @@ void main()
                     GN_DetermineCombatRound();
                 }
             }
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1003));
@@ -359,6 +360,7 @@ void main()
                     }
                 }
             }
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_DAMAGED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
@@ -575,6 +577,13 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
             }
+
+            /*
+            if(GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && !GetSoloMode())
+                SetSoloMode(1);
+            else if(!GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && GetSoloMode())
+                SetSoloMode(0);
+            */
         }
         break;
         case 2002: //KOTOR_HENCH_EVENT_ON_PERCEPTION
@@ -598,7 +607,10 @@ void main()
                            GetAttackTarget() == GetLastPerceived()) && GetArea(GetLastPerceived()) != GetArea(OBJECT_SELF))
                         {
                            ClearAllActions();
-                           GN_DetermineCombatRound();
+                           //if(!GetSoloMode())
+                           //    SetSoloMode(1);
+                           //if( !IsObjectPartyMember(OBJECT_SELF) )
+                           //    GN_DetermineCombatRound();
                         }
                     }
                     //Do not bother checking the last target seen if already fighting
@@ -617,7 +629,10 @@ void main()
                                     //SetFacingPoint(GetPosition(GetLastPerceived()));
                                     //SpeakString("GEN_COMBAT_ACTIVE", TALKVOLUME_SILENT_TALK);
                                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_SHOUT);
-                                    GN_DetermineCombatRound();
+                                    //if(!GetSoloMode())
+                                    //    SetSoloMode(1);
+                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                    //    GN_DetermineCombatRound();
                                 }
                             }
                         }
@@ -643,7 +658,12 @@ void main()
                 //{
                     Db_MyPrintString("GENERIC DEBUG *************** End of Combat Round: " + GN_ReturnDebugName(OBJECT_SELF));
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
-                    GN_DetermineCombatRound();
+                    //if(GetIsInCombat() && !GetSoloMode())
+                    //    SetSoloMode(1);
+                    //else if(!GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && GetSoloMode())
+                    //    SetSoloMode(0);
+                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                    //    GN_DetermineCombatRound();
                 //}
             }
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
@@ -726,7 +746,9 @@ void main()
                             {
                                 if(!GetIsInCombat())
                                 {
-                                    GN_DetermineCombatRound();
+                                    //SetSoloMode(1);
+                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                    //    GN_DetermineCombatRound();
                                 }
                             }
                         }
@@ -746,6 +768,14 @@ void main()
         break;
         case 2006: //KOTOR_HENCH_EVENT_ON_DAMAGE
         {
+            /*
+            if(GN_GetIsFighting(GetLastDamager()))
+            {
+                if(!GetSoloMode())
+                    SetSoloMode(1);
+            }
+            */
+
             if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF))
             {
                 if(GetFirstPC() == OBJECT_SELF &&
@@ -767,14 +797,18 @@ void main()
                             {
                                 if(!GetIsObjectValid(GetAttemptedAttackTarget()) && !GetIsObjectValid(GetAttemptedSpellTarget()) && !GetIsObjectValid(GetAttackTarget()) )
                                 {
-                                    GN_DetermineCombatRound();
+                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                    //   GN_DetermineCombatRound();
                                     if(!GN_GetIsFighting(OBJECT_SELF))
                                     {
                                         object oTarget = GetLastDamager();
                                         if(!GetObjectSeen(oTarget) && GetArea(OBJECT_SELF) == GetArea(oTarget))
                                         {
-                                            ActionMoveToLocation(GetLocation(oTarget), TRUE);
-                                            ActionDoCommand(GN_DetermineCombatRound());
+                                            //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                            //{
+                                            //     ActionMoveToLocation(GetLocation(oTarget), TRUE);
+                                            //     ActionDoCommand(GN_DetermineCombatRound());
+                                            //}
                                         }
                                     }
                                 }
@@ -792,7 +826,8 @@ void main()
                                (GetTotalDamageDealt() > (GetMaxHitPoints(OBJECT_SELF) / 4) ||
                                 (GetHitDice(oAttacker) - 2) > GetHitDice(oTarget) ) )
                             {
-                                GN_DetermineCombatRound(oAttacker);
+                                //if( !IsObjectPartyMember(OBJECT_SELF) )
+                                //    GN_DetermineCombatRound(oAttacker);
                             }
                         }
                     }
@@ -910,45 +945,45 @@ void MultiTarget()
     int nDamageType;
 
     if(oWeapon == BASE_ITEM_BLASTER_PISTOL ||
-        oWeapon == BASE_ITEM_HEAVY_BLASTER ||
-        oWeapon == BASE_ITEM_HOLD_OUT_BLASTER ||
-        oWeapon == BASE_ITEM_BOWCASTER ||
-        oWeapon == BASE_ITEM_BLASTER_CARBINE ||
-        oWeapon == BASE_ITEM_REPEATING_BLASTER ||
-        oWeapon == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
-        oWeapon == BASE_ITEM_BLASTER_RIFLE
+       oWeapon == BASE_ITEM_HEAVY_BLASTER ||
+       oWeapon == BASE_ITEM_HOLD_OUT_BLASTER ||
+       oWeapon == BASE_ITEM_BOWCASTER ||
+       oWeapon == BASE_ITEM_BLASTER_CARBINE ||
+       oWeapon == BASE_ITEM_REPEATING_BLASTER ||
+       oWeapon == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
+       oWeapon == BASE_ITEM_BLASTER_RIFLE
     )
         nDamageType = 4096;
 
-        else if(oWeapon == BASE_ITEM_ION_BLASTER ||
+    else if(oWeapon == BASE_ITEM_ION_BLASTER ||
             oWeapon == BASE_ITEM_ION_RIFLE
-        )
-            nDamageType = 2048;
+    )
+        nDamageType = 2048;
 
-            else if(oWeapon == BASE_ITEM_DISRUPTER_PISTOL ||
-                oWeapon == BASE_ITEM_DISRUPTER_RIFLE
-            )
-                nDamageType = 8;
+    else if(oWeapon == BASE_ITEM_DISRUPTER_PISTOL ||
+            oWeapon == BASE_ITEM_DISRUPTER_RIFLE
+    )
+        nDamageType = 8;
 
-                else if(oWeapon == BASE_ITEM_SONIC_PISTOL ||
-                    oWeapon == BASE_ITEM_SONIC_RIFLE
-                )
-                    nDamageType = 1024;
+    else if(oWeapon == BASE_ITEM_SONIC_PISTOL ||
+            oWeapon == BASE_ITEM_SONIC_RIFLE
+    )
+        nDamageType = 1024;
 
-                    // Get the target of the richochet
-                    object oTarget = GetFirstObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(OBJECT_SELF), FALSE, OBJECT_TYPE_CREATURE);
+    // Get the target of the richochet
+    object oTarget = GetFirstObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(OBJECT_SELF), FALSE, OBJECT_TYPE_CREATURE);
 
-                    while(GetIsObjectValid(oTarget))
-                    {
-                        if(GetIsEnemy(oTarget, oDamager) && oTarget != GetAttackTarget(oDamager) && oTarget != GetLastHostileTarget(oDamager)) // Only richochet once
-                        {
-                            AssignCommand(oDamager, ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(nDamage, nDamageType), oTarget));
-                            break;
-                        }
-                        else
-                            oTarget = GetNextObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE);
-                    }
+    while(GetIsObjectValid(oTarget))
+    {
+        if(GetIsEnemy(oTarget, oDamager) && oTarget != GetAttackTarget(oDamager) && oTarget != GetLastHostileTarget(oDamager)) // Only richochet once
+        {
+            AssignCommand(oDamager, ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(nDamage, nDamageType), oTarget));
+            break;
+        }
+        else
+            oTarget = GetNextObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE);
+    }
 
-                    //if(GetAttackTarget(oDamager) == OBJECT_SELF)
-                    //    ExecuteScript("multitarget", oDamager);
+    //if(GetAttackTarget(oDamager) == OBJECT_SELF)
+    //    ExecuteScript("multitarget", oDamager);
 }
