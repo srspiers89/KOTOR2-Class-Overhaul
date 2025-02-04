@@ -539,7 +539,7 @@ void main()
             object oEnemy = GetNearestCreature(CREATURE_TYPE_PERCEPTION, PERCEPTION_SEEN, OBJECT_SELF, 1, CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
             //GN_SetSpawnInCondition(SW_FLAG_SHOUTED_AT, FALSE);
 
-            if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF) && !GetSoloMode())
+            if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF)) // && !GetSoloMode())
             {
                 if(GetPartyMemberByIndex(0) != OBJECT_SELF)
                 {
@@ -569,19 +569,21 @@ void main()
                     }
                 }
             }
-            else if(GetSoloMode() && GetCurrentAction(OBJECT_SELF) == ACTION_FOLLOWLEADER)
-            {
-                ClearAllActions();
-            }
+            //else if(GetSoloMode() && GetCurrentAction(OBJECT_SELF) == ACTION_FOLLOWLEADER)
+            //{
+            //    ClearAllActions();
+            //}
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
             }
 
-            if(GetIsInCombat() && !GetSoloMode())
+            /*
+            if(GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && !GetSoloMode())
                 SetSoloMode(1);
-            else if(!GetIsInCombat() && GetSoloMode())
+            else if(!GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && GetSoloMode())
                 SetSoloMode(0);
+            */
         }
         break;
         case 2002: //KOTOR_HENCH_EVENT_ON_PERCEPTION
@@ -605,8 +607,8 @@ void main()
                            GetAttackTarget() == GetLastPerceived()) && GetArea(GetLastPerceived()) != GetArea(OBJECT_SELF))
                         {
                            ClearAllActions();
-                           if(!GetSoloMode())
-                               SetSoloMode(1);
+                           //if(!GetSoloMode())
+                           //    SetSoloMode(1);
                            //if( !IsObjectPartyMember(OBJECT_SELF) )
                            //    GN_DetermineCombatRound();
                         }
@@ -627,8 +629,8 @@ void main()
                                     //SetFacingPoint(GetPosition(GetLastPerceived()));
                                     //SpeakString("GEN_COMBAT_ACTIVE", TALKVOLUME_SILENT_TALK);
                                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_SHOUT);
-                                    if(!GetSoloMode())
-                                        SetSoloMode(1);
+                                    //if(!GetSoloMode())
+                                    //    SetSoloMode(1);
                                     //if( !IsObjectPartyMember(OBJECT_SELF) )
                                     //    GN_DetermineCombatRound();
                                 }
@@ -656,10 +658,10 @@ void main()
                 //{
                     Db_MyPrintString("GENERIC DEBUG *************** End of Combat Round: " + GN_ReturnDebugName(OBJECT_SELF));
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
-                    if(GetIsInCombat() && !GetSoloMode())
-                        SetSoloMode(1);
-                    else if(!GetIsInCombat() && GetSoloMode())
-                        SetSoloMode(0);
+                    //if(GetIsInCombat() && !GetSoloMode())
+                    //    SetSoloMode(1);
+                    //else if(!GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && GetSoloMode())
+                    //    SetSoloMode(0);
                     //if( !IsObjectPartyMember(OBJECT_SELF) )
                     //    GN_DetermineCombatRound();
                 //}
@@ -744,6 +746,7 @@ void main()
                             {
                                 if(!GetIsInCombat())
                                 {
+                                    //SetSoloMode(1);
                                     //if( !IsObjectPartyMember(OBJECT_SELF) )
                                     //    GN_DetermineCombatRound();
                                 }
@@ -765,11 +768,13 @@ void main()
         break;
         case 2006: //KOTOR_HENCH_EVENT_ON_DAMAGE
         {
+            /*
             if(GN_GetIsFighting(GetLastDamager()))
             {
                 if(!GetSoloMode())
                     SetSoloMode(1);
             }
+            */
 
             if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF))
             {

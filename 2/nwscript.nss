@@ -5115,7 +5115,6 @@ void AddJournalWorldEntryStrref ( int strref, int strrefTitle );
 // If creature is specefied as OBJECT_INVALID a general bark is made.
 void BarkString(object oCreature,int strRef, int nBarkX = -1, int nBarkY = -1);
 
-
 // 672: DeleteJournalWorldAllEntries
 // Nuke's 'em all, user entered or otherwise.
 void DeleteJournalWorldAllEntries();
@@ -5560,7 +5559,7 @@ object CreateItemOnFloor(string sTemplate, location lLocation, int bUseAppearAni
 
 // 767. SetAvailableNPCId
 // This will set the object id that should be used for a specific available NPC
-void SetAvailableNPCId(int nNPC, object oidNPC);
+void SetAvailableNPCId(INT nNPC, OBJECT_ID oidNPC);
 
 // DJS-OEI
 // 768. GetScriptParameter
@@ -5774,10 +5773,7 @@ void AddBonusForcePoints( object oCreature, int nBonusFP );
 // 803: GetBonusForcePoints - This returns the total number of bonus
 //      force points a player has. Bonus Force Points are a pool of
 //      points that are always added to a player's Max Force Points.
-// ST: Please explain how a function returning VOID could return a
-//     numerical value? Hope it works changing the return type...
-// void GetBonusForcePoints( object oCreature );
-int GetBonusForcePoints( object oCreature );
+void GetBonusForcePoints( object oCreature );
 
 // FAK - OEI 2/11/04
 // 804: SWMG_SetJumpSpeed -- the sets the 'jump speed' for the swoop
