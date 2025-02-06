@@ -764,6 +764,16 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1005));
             }
+
+            // Damage the attacker if they are affected by the Empathy force power
+            effect eDamage;
+
+            if (GetHasSpellEffect(284, oAttacker))
+            {
+                eDamage = EffectDamage(d8(GetHitDice(OBJECT_SELF)), DAMAGE_TYPE_LIGHT_SIDE);
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oAttacker);
+            }
+
         }
         break;
         case 2006: //KOTOR_HENCH_EVENT_ON_DAMAGE
