@@ -12,6 +12,9 @@
 #include "k_inc_switch"
 #include "k_inc_utility"
 
+#include "k_inc_hb"
+#include "k_inc_dmg"
+
 void MultiTarget();
 
 void main()
@@ -569,21 +572,13 @@ void main()
                     }
                 }
             }
-            //else if(GetSoloMode() && GetCurrentAction(OBJECT_SELF) == ACTION_FOLLOWLEADER)
-            //{
-            //    ClearAllActions();
-            //}
+
+            Fury();
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
             }
-
-            /*
-            if(GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && !GetSoloMode())
-                SetSoloMode(1);
-            else if(!GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && GetSoloMode())
-                SetSoloMode(0);
-            */
         }
         break;
         case 2002: //KOTOR_HENCH_EVENT_ON_PERCEPTION
@@ -843,6 +838,9 @@ void main()
                     }
                 }
             }
+
+            UndyingFury();
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_DAMAGED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
