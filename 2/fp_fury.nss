@@ -14,6 +14,7 @@ void main()
     int nExtraAttacks = 0;
     int nDefenseModifier;
     int nSaveModifier;
+    int nStrengthModifier;
     float fDuration;
     int nIcon;
 
@@ -21,6 +22,7 @@ void main()
     {
         nDefenseModifier = 2;
         nSaveModifier = 1;
+        nStrengthModifier = 2;
         fDuration = 30.0;
         nIcon = 82;
     }
@@ -29,6 +31,7 @@ void main()
         nExtraAttacks = 1;
         nDefenseModifier = 4;
         nSaveModifier = 2;
+        nStrengthModifier = 4;
         fDuration = 45.0;
         nIcon = 83;
     }
@@ -37,6 +40,7 @@ void main()
         nExtraAttacks = 2;
         nDefenseModifier = 6;
         nSaveModifier = 3;
+        nStrengthModifier = 6;
         fDuration = 60.0;
         nIcon = 84;
 
@@ -55,6 +59,7 @@ void main()
         eLink1 = EffectLinkEffects(eLink1, EffectSavingThrowIncrease( SAVING_THROW_FORT, nSaveModifier ) );
         eLink1 = EffectLinkEffects(eLink1, EffectSavingThrowIncrease( SAVING_THROW_WILL, nSaveModifier ) );
         eLink1 = EffectLinkEffects(eLink1, EffectACDecrease( nDefenseModifier ) );
+        eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_STRENGTH, nStrengthModifier));
 
         if( nExtraAttacks > 0 ) {
             eLink1 = EffectLinkEffects(eLink1, EffectModifyAttacks( nExtraAttacks ) );
