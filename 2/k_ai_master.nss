@@ -14,6 +14,7 @@
 
 #include "k_inc_hb"
 #include "k_inc_dmg"
+#include "elite_spawn"
 
 void MultiTarget();
 
@@ -75,6 +76,13 @@ void main()
                     }
                 }
             }
+
+            if (!GetLocalBoolean(OBJECT_SELF, 120) && GetStandardFaction(OBJECT_SELF) == STANDARD_FACTION_HOSTILE_1)
+            {
+                SpawnElite();
+                SetLocalBoolean(OBJECT_SELF, 120, TRUE);
+            }
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
@@ -574,6 +582,15 @@ void main()
             }
 
             Fury();
+
+            /*
+            effect eEliteSpawn = EffectAreaOfEffect(3);
+
+            if (!GetIsObjectValid(GetObjectByTag("VFX_ELITE_SPAWN")) && GetPartyMemberByIndex(0) == OBJECT_SELF)
+            {
+                ApplyEffectToObject(DURATION_TYPE_PERMANENT, eEliteSpawn, OBJECT_SELF);
+            }
+            */
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
