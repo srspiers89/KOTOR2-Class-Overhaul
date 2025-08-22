@@ -77,11 +77,13 @@ void main()
                 }
             }
 
+            /*
             if (!GetLocalBoolean(OBJECT_SELF, 120) && GetStandardFaction(OBJECT_SELF) == STANDARD_FACTION_HOSTILE_1)
             {
                 SpawnElite();
                 SetLocalBoolean(OBJECT_SELF, 120, TRUE);
             }
+            */
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
@@ -184,6 +186,12 @@ void main()
                     SpeakString("GEN_COMBAT_ACTIVE", TALKVOLUME_SILENT_TALK);
                     GN_DetermineCombatRound();
                 }
+            }
+
+            if (!GetLocalBoolean(OBJECT_SELF, 120) && GetStandardFaction(OBJECT_SELF) == STANDARD_FACTION_HOSTILE_1)
+            {
+                SpawnElite();
+                SetLocalBoolean(OBJECT_SELF, 120, TRUE);
             }
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
