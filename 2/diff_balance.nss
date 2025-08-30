@@ -2,10 +2,11 @@
 
 void Diff_Balance();
 int ToHitCalc(object oCreature);
+int DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nDamage, nDamageType, nWeapon, i, nMaxHp, nPC_ToHit, nAttackBonus, nDefBonus;
+    int nDamage, nDamageType, nWeapon, i, nMaxHp, nPC_ToHit, nAttackBonus, nDefBonus, nSaveBonus, nPC_DC;
     object oPC;
     effect eLink1;
 
@@ -28,6 +29,17 @@ void Diff_Balance()
         ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF);
 
     // Saves
+    nPC_DC = DC_Calc(oPC);
+
+    nSaveBonus = nPC_DC - 11 - GetFortitudeSavingThrow(OBJECT_SELF);
+    // To Do Add > 0 check
+    ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+
+    nSaveBonus = nPC_DC - 11 - GetReflexSavingThrow(OBJECT_SELF);
+    ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
+
+    nSaveBonus = nPC_DC - 11 - GetWillSavingThrow(OBJECT_SELF);
+    ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
 
     // # of attacks
 
@@ -41,7 +53,7 @@ void Diff_Balance()
 
     // Damage
     nDamage = GetMaxHitPoints(oPC) * 2 / 10;
-    nDamage = nDamage * GetPartyMemberCount() / 3;
+    nDamage *= GetPartyMemberCount() / 3;
 
     // Get damage type
     nWeapon = GetBaseItemType(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, OBJECT_SELF));
@@ -122,17 +134,17 @@ int ToHitCalc(object oCreature)
     nStr = GetAbilityModifier(ABILITY_STRENGTH, oCreature);
 
     if (GetWeaponRanged(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature))) // ranged weapon add dex
-        nToHit = nToHit + nDex;
+        nToHit += nDex;
     else if (GetFeatAcquired(FEAT_FINESSE_MELEE_WEAPONS, oCreature) || // if finesse add greater of str and dex
         GetFeatAcquired(FEAT_FINESSE_LIGHTSABERS, oCreature))
     {
         if (nStr > nDex)
-            nToHit = nToHit + nStr;
+            nToHit += nStr;
         else
-            nToHit = nToHit + nDex;
+            nToHit += nDex;
     }
     else
-        nToHit = nToHit + nStr;
+        nToHit += nStr;
 
     // Check for feat bonuses
     if (GetFeatAcquired(FEAT_WEAPON_FOCUS_BLASTER, oCreature) ||
@@ -143,24 +155,24 @@ int ToHitCalc(object oCreature)
         GetFeatAcquired(FEAT_WEAPON_FOCUS_MELEE_WEAPONS, oCreature) ||
         GetFeatAcquired(FEAT_WEAPON_FOCUS_SIMPLE_WEAPONS, oCreature)
     )
-        nToHit = nToHit + 1;
+        nToHit += 1;
 
         if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_1, oCreature))
-            nToHit = nToHit + 1;
+            nToHit += 1;
     if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_2, oCreature))
-        nToHit = nToHit + 1;
+        nToHit += 1;
     if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3, oCreature))
-        nToHit = nToHit + 1;
+        nToHit += 1;
 
     if (GetFeatAcquired(FEAT_TARGETING_1, oCreature) && GetWeaponRanged(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature)))
     {
-        nToHit = nToHit + 1;
+        nToHit += 1;
         i = FEAT_TARGETING_2;
 
         while (i <=  FEAT_TARGETING_10)
         {
             if (GetFeatAcquired(i, oCreature))
-                nToHit = nToHit + 1;
+                nToHit += 1;
 
             i++;
         }
@@ -188,51 +200,51 @@ int ToHitCalc(object oCreature)
             nType == BASE_ITEM_WOOKIE_WARBLADE ||
             nType == BASE_ITEM_FORCE_PIKE
         )
-            nToHit = nToHit + 2;
+            nToHit += 2;
 
-            if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_1))
-                nToHit = nToHit - 1;
-        else if (GetFeatAcquired(85)) // Master Two-Weapon Fighting
-            nToHit = nToHit - 2;
-        else if (GetFeatAcquired(9)) // Improved Two-Weapon Fighting
-            nToHit = nToHit - 4;
+        if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_1, oCreature))
+                nToHit -= 1;
+        else if (GetFeatAcquired(85, oCreature)) // Master Two-Weapon Fighting
+            nToHit -= 2;
+        else if (GetFeatAcquired(9, oCreature)) // Improved Two-Weapon Fighting
+            nToHit -= 4;
         else
-            nToHit = nToHit - 6;
+            nToHit -= 6;
     }
 
     // Check Lightsaber forms
     if (IsFormActive(oCreature, FORM_SABER_I_SHII_CHO))
-        nToHit = nToHit + 1;
+        nToHit += 1;
     if (IsFormActive(oCreature, FORM_SABER_V_SHIEN))
-        nToHit = nToHit + 2;
+        nToHit += 2;
     if (IsFormActive(oCreature, FORM_SABER_VI_NIMAN))
-        nToHit = nToHit + 1;
+        nToHit += 1;
 
     // Force Power Effects
     if (GetHasSpellEffect(FORCE_POWER_MASTER_BATTLE_MEDITATION_PC, oCreature))
-        nToHit = nToHit + 4;
+        nToHit += 4;
     else if (GetHasSpellEffect(FORCE_POWER_IMPROVED_BATTLE_MEDITATION_PC, oCreature) ||
         GetHasSpellEffect(FORCE_POWER_BATTLE_MEDITATION_PC, oCreature)
     )
-        nToHit = nToHit + 2;
+        nToHit += 2;
 
         if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_V, oCreature))
-            nToHit = nToHit + 5;
+            nToHit += 5;
     else if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_IV, oCreature))
-        nToHit = nToHit + 4;
+        nToHit += 4;
     else if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_III, oCreature))
-        nToHit = nToHit + 3;
+        nToHit += 3;
     else if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_II, oCreature))
-        nToHit = nToHit + 2;
+        nToHit += 2;
     else if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_I, oCreature))
-        nToHit = nToHit + 1;
+        nToHit += 1;
 
     if (GetHasSpellEffect(77, oCreature)) // Echani Battle Stim
-        nToHit = nToHit + 3;
+        nToHit += 3;
     else if (GetHasSpellEffect(76, oCreature)) // Hyper-Battle Stim
-        nToHit = nToHit + 2;
+        nToHit += 2;
     else if (GetHasSpellEffect(75, oCreature)) // Battle Stim
-        nToHit = nToHit + 1;
+        nToHit += 1;
 
     // Get bonuses from items
     oItem = GetItemInSlot(INVENTORY_SLOT_HEAD, oCreature);
@@ -242,11 +254,11 @@ int ToHitCalc(object oCreature)
         if (sItem == "a_helmet_19" ||
             sItem == "a_helmet_08"
         )
-            nToHit = nToHit + 1;
+            nToHit += 1;
             if (sItem == "a_helmet_24")
-                nToHit = nToHit + 2;
+                nToHit += 2;
         if (sItem == "a_helmet_16")
-            nToHit = nToHit + 3;
+            nToHit += 3;
     }
 
     oItem = GetItemInSlot(INVENTORY_SLOT_IMPLANT, oCreature);
@@ -254,7 +266,7 @@ int ToHitCalc(object oCreature)
     {
         sItem = GetTag(oItem);
         if (sItem == "e_imp3_04")
-            nToHit = nToHit + 1;
+            nToHit += 1;
     }
 
     oItem = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature);
@@ -288,7 +300,7 @@ int ToHitCalc(object oCreature)
             sItem == "w_melee_13" ||
             sItem == "w_melee_x02"
         )
-            nToHit = nToHit + 1;
+            nToHit += 1;
 
             if (sItem == "w_blaste_21" ||
                 sItem == "w_blaste_30" ||
@@ -306,20 +318,51 @@ int ToHitCalc(object oCreature)
                 sItem == "w_melee_20" ||
                 sItem == "w_sls_x02"
             )
-                nToHit = nToHit + 2;
+                nToHit += 2;
 
                 if (sItem == "w_blaste_19" ||
                     sItem == "w_brifle_21"
                 )
-                    nToHit = nToHit + 3;
+                    nToHit += 3;
 
                     if (sItem == "w_brifle_23")
-                        nToHit = nToHit + 4;
+                        nToHit += 4;
     }
 
     // Add bonus based on level to account for items
     if (IsObjectPartyMember(oCreature))
-        nToHit = nToHit + (GetHitDice(oCreature) / 5);
+        nToHit += (GetHitDice(oCreature) / 4);
 
     return nToHit;
+}
+
+int DC_Calc(object oCreature)
+{
+    int nDC = 0, i = 0;
+
+    /*
+    // Get highest spell dc in party
+    for (i; i > 2; i++)
+    {
+        oCreature = GetPartyMemberByIndex(i);
+
+        if (nDC < (5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature)))
+            nDC = 5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature);
+    } */
+
+    nDC = 5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature);
+
+    // Check for force focus feats
+    if (GetFeatAcquired(FEAT_FORCE_FOCUS_MASTERY, oCreature))
+        nDC += 4;
+    else if (GetFeatAcquired(FEAT_FORCE_FOCUS_ADVANCED, oCreature))
+        nDC += 3;
+    else if (GetFeatAcquired(88, oCreature)) // Force Focus
+        nDC += 2;
+
+    // Check for Force Forms modifying dc
+    if (IsFormActive(oCreature, FORM_FORCE_IV_MASTERY))
+        nDC += 2;
+
+    return nDC;
 }
