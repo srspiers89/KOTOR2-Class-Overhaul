@@ -15,6 +15,8 @@
 #include "k_inc_hb"
 #include "k_inc_dmg"
 #include "elite_spawn"
+// #include "levelup"
+#include "diff_balance"
 
 void MultiTarget();
 
@@ -84,6 +86,11 @@ void main()
                 SetLocalBoolean(OBJECT_SELF, 120, TRUE);
             }
             */
+
+            if (!GetPlayerRestrictMode(OBJECT_SELF) && !GetLocalBoolean(OBJECT_SELF, 122))
+            {
+                Diff_Balance();
+            }
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
@@ -166,6 +173,12 @@ void main()
                     }
                 }
             }
+
+            //if (!GetPlayerRestrictMode(OBJECT_SELF) && !GetLocalBoolean(OBJECT_SELF, 122))
+            //{
+            //    LevelUp();
+            //}
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_PERCEPTION) && GetLastPerceptionSeen())
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1002));

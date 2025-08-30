@@ -1,6 +1,6 @@
 // Force Jinx force power
 //
-// Make an enemy attack itself lol
+// Make an enemy attack itself lol jk doesn't work'
 
 #include "k_inc_force"
 

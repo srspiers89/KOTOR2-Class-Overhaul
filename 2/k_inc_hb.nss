@@ -3,6 +3,7 @@
 // Include file for my feats and force powers that use the onheartbeat event
 
 void Fury();
+float GetBAB(int nClass);
 
 void Fury()
 {
@@ -61,4 +62,30 @@ void Fury()
         if (!GetIsConversationActive())
             SetMinOneHP(OBJECT_SELF, 0);
     }
+}
+
+float GetBAB(int nClass)
+{
+    float fBAB;
+
+    switch (nClass) {
+        case CLASS_TYPE_SOLDIER:            fBAB = 1.0;
+        case CLASS_TYPE_SCOUT:              fBAB = 0.75;
+        case CLASS_TYPE_SCOUNDREL:          fBAB = 0.75;
+        case CLASS_TYPE_JEDIGUARDIAN:       fBAB = 1.0;
+        case CLASS_TYPE_JEDICONSULAR:       fBAB = 0.5;
+        case CLASS_TYPE_JEDISENTINEL:       fBAB = 0.75;
+        case CLASS_TYPE_COMBATDROID:        fBAB = 1.0;
+        case CLASS_TYPE_EXPERTDROID:        fBAB = 0.75;
+        case CLASS_TYPE_MINION:             fBAB = 1.0;
+        case CLASS_TYPE_TECHSPECIALIST:     fBAB = 0.75;
+        case CLASS_TYPE_JEDIWEAPONMASTER:   fBAB = 1.0;
+        case CLASS_TYPE_JEDIMASTER:         fBAB = 0.5;
+        case CLASS_TYPE_JEDIWATCHMAN:       fBAB = 0.75;
+        case CLASS_TYPE_SITHMARAUDER:       fBAB = 1.0;
+        case CLASS_TYPE_SITHLORD:           fBAB = 0.5;
+        case CLASS_TYPE_SITHASSASSIN:       fBAB = 0.75;
+    }
+
+    return fBAB;
 }

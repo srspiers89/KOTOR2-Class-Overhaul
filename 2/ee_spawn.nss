@@ -119,7 +119,7 @@ void main()
     //This adds the decloaking effect to elite enemies when they spawn in.
     effect eUncloak = EffectVisualEffect( 8000 );
     ApplyEffectToObject( DURATION_TYPE_TEMPORARY, eUncloak, OBJECT_SELF, 2.0f);
-    DelayCommand(2.0, EnableRendering(OBJECT_SELF, TRUE));
+    // DelayCommand(2.0, EnableRendering(OBJECT_SELF, TRUE));
     DelayCommand(2.0, ChangeToStandardFaction(OBJECT_SELF, STANDARD_FACTION_HOSTILE_1));
     DelayCommand(2.1, ApplyEffectToObject( DURATION_TYPE_TEMPORARY, EffectVisualEffect( 8001 ), OBJECT_SELF, 5.0f));
     DelayCommand(2.0, GN_DetermineCombatRound());

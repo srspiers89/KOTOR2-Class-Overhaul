@@ -4,7 +4,9 @@
 
 void SpawnElite();
 string ChooseWeapon(string sBase);
-void ChooseClass();
+void ChooseClassDroid(object oEnemy, location lLoc, int nAppearance);
+void ChooseClassMeatbag(object oEnemy, location lLoc, int nAppearance);
+void ChooseClassBeast(object oEnemy, location lLoc, int nAppearance);
 
 void SpawnElite()
 {
@@ -18,7 +20,7 @@ void SpawnElite()
         object oBaseItem, oBaseItem2;
         object oArmor, oWeapon1, oWeapon2;
         string sBase, sBase2, sRand;
-        int nRand;
+        int nRand, nClass;
 
         // Get appearance of enemy
         int nAppearance = GetAppearanceType(oEnemy);
@@ -29,19 +31,21 @@ void SpawnElite()
 
         SetCustomToken(4242, sNewName);
 
-        // Get race of creature
+        /* Get race of creature
         if (GetRacialType(oEnemy) == 5)
-            sResRef = "elite_droid";
+            sResRef = "elite_droid_pyro";
         else
-            sResRef = "elite_meatbag";
-
-        object oElite = CreateObject(OBJECT_TYPE_CREATURE, sResRef, lLoc);
-        // ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectVisualEffect(VFX_DUR_STEALTH_PULSE), oElite);
-        ChangeObjectAppearance(oElite, nAppearance); // Change appearance of elite to match
+            sResRef = "elite_meatbag"; */
 
         // Choose Class for Elite
+        if (GetRacialType(oEnemy) == 5)
+            ChooseClassDroid(oEnemy, lLoc, nAppearance);
+        else if (GetSubRace(oEnemy) == 2)
+            ChooseClassBeast(oEnemy, lLoc, nAppearance);
+        else
+            ChooseClassMeatbag(oEnemy, lLoc, nAppearance);
 
-
+        /*
         // Copy equipped items to elite
 
         // Choose Armor
@@ -171,7 +175,7 @@ void SpawnElite()
                         }
                     }
                 }}
-        }
+        } */
     }
 }
 
@@ -191,12 +195,70 @@ string ChooseWeapon(string sBase)
     else
         sBase = sBase + IntToString(nRand);
 
-    // CreateItemOnObject(sBase, oElite, 2, TRUE);
-
     return sBase;
 }
 
-void ChooseClass()
+void ChooseClassDroid(object oEnemy, location lLoc, int nAppearance)
+{
+    object oElite, oArmor, oBaseItem;
+
+    int nClass = Random(2);
+
+    if (nClass == 0) // Pyro Droid
+    {
+        oElite = CreateObject(OBJECT_TYPE_CREATURE, "elite_droid_pyro", lLoc);
+
+        ChangeObjectAppearance(oElite, nAppearance); // Change appearance of elite to match
+
+        // Equip Armor || can cause game crash
+        //oArmor = CreateItemOnObject("d_armor_12", oElite, 1, TRUE);
+        //if (GetIsObjectValid(oArmor))
+        //    AssignCommand(oElite, ActionEquipItem(oArmor, INVENTORY_SLOT_BODY, TRUE));
+
+        // Equip Weapons
+
+
+        // Equip shields, droid items, etc
+        //oBaseItem = CreateItemOnObject("d_elite_torch", oElite, 1, TRUE);
+        //if (GetIsObjectValid(oBaseItem))
+        //    DelayCommand(0.2, AssignCommand(oElite, ActionEquipItem(oBaseItem, INVENTORY_SLOT_LEFTARM, TRUE)));
+
+        // CreateItemOnObject("g_w_firegren001", oElite, 5, TRUE);
+
+        // Add Special Abilities
+    }
+
+    if (nClass == 1) // Cryo Droid
+    {
+        oElite = CreateObject(OBJECT_TYPE_CREATURE, "elite_droid_cryo", lLoc);
+
+        ChangeObjectAppearance(oElite, nAppearance); // Change appearance of elite to match
+
+        // Equip Armor
+
+        // Equip Weapons
+
+        // Equip shields, droid items, etc
+
+        // Add Special Abilities
+    }
+}
+
+void ChooseClassMeatbag(object oEnemy, location lLoc, int nAppearance)
+{
+    object oElite;
+
+    int nClass = 0;
+
+    if (nClass == 0) // Venom aka poison guy
+    {
+        oElite = CreateObject(OBJECT_TYPE_CREATURE, "ee_mb_venom", lLoc);
+
+        ChangeObjectAppearance(oElite, nAppearance); // Change appearance of elite to match
+    }
+}
+
+void ChooseClassBeast(object oEnemy, location lLoc, int nAppearance)
 {
 
 }
