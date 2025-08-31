@@ -6,13 +6,15 @@ int DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nDamage, nDamageType, nWeapon, i, nMaxHp, nPC_ToHit, nAttackBonus, nDefBonus, nSaveBonus, nPC_DC;
+    int nDamage, nDamageType, nWeapon, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize;
+    int nHenchBonus;
     object oPC;
     effect eLink1;
 
     oPC = GetFirstPC();
 
     int nLevel = GetHitDice(oPC);
+    nPartySize = GetPartyMemberCount();
 
     // Attack Bonus
     nAttackBonus = GetAC(oPC) - 11 - ToHitCalc(OBJECT_SELF);
@@ -21,25 +23,62 @@ void Diff_Balance()
         ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectAttackIncrease(nAttackBonus), OBJECT_SELF);
 
     // Defense
-    nPC_ToHit = ToHitCalc(oPC);
+    // Find highest attack bonus in party
+    nToHit = ToHitCalc(GetPartyMemberByIndex(0));
 
-    nDefBonus = (nPC_ToHit + 11) - GetAC(OBJECT_SELF);
+    if (nPartySize > 1)
+    {
+        nHenchBonus = ToHitCalc(GetPartyMemberByIndex(1));
+
+        if (nHenchBonus > nToHit)
+            nToHit = nHenchBonus;
+    }
+
+    if (nPartySize > 2)
+    {
+        nHenchBonus = ToHitCalc(GetPartyMemberByIndex(2));
+
+        if (nHenchBonus > nToHit)
+            nToHit = nHenchBonus;
+    }
+
+    // to hit + 11 = 50% chance to hit
+    nDefBonus = (nToHit + 11) - GetAC(OBJECT_SELF);
 
     if (nDefBonus > 0)
         ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF);
 
     // Saves
-    nPC_DC = DC_Calc(oPC);
+    // Find highest force power save dc
+    nDC = DC_Calc(GetPartyMemberByIndex(0));
 
-    nSaveBonus = nPC_DC - 11 - GetFortitudeSavingThrow(OBJECT_SELF);
-    // To Do Add > 0 check
-    ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+    if (nPartySize > 1)
+    {
+        nHenchBonus = DC_Calc(GetPartyMemberByIndex(1));
 
-    nSaveBonus = nPC_DC - 11 - GetReflexSavingThrow(OBJECT_SELF);
-    ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        if (nHenchBonus > nDC)
+            nDC = nHenchBonus;
+    }
 
-    nSaveBonus = nPC_DC - 11 - GetWillSavingThrow(OBJECT_SELF);
-    ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
+    if (nPartySize > 2)
+    {
+        nHenchBonus = DC_Calc(GetPartyMemberByIndex(2));
+
+        if (nHenchBonus > nDC)
+            nDC = nHenchBonus;
+    }
+
+    nSaveBonus = nDC - 11 - GetFortitudeSavingThrow(OBJECT_SELF);
+    if (nSaveBonus > 0)
+        ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+
+    nSaveBonus = nDC - 11 - GetReflexSavingThrow(OBJECT_SELF);
+    if (nSaveBonus > 0)
+        ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
+
+    nSaveBonus = nDC - 11 - GetWillSavingThrow(OBJECT_SELF);
+    if (nSaveBonus > 0)
+        ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
 
     // # of attacks
 
