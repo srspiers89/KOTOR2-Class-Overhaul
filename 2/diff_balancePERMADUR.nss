@@ -7,73 +7,68 @@ int DC_Calc(object oCreature);
 void Diff_Balance()
 {
     int nDamage, nDamageType, nWeapon, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize;
-    int nHenchBonus, nAvgAC;
+    int nHenchBonus;
     object oPC1, oPC2, oPC3;
-
-    if (!GetLocalBoolean(OBJECT_SELF, 122))
-        SetLocalNumber(OBJECT_SELF, 13, GetAC(OBJECT_SELF)); // set local number 13 to Original AC
+    effect eLink1;
 
     oPC1 = GetPartyMemberByIndex(0);
-    oPC2 = GetPartyMemberByIndex(1);
-    oPC3 = GetPartyMemberByIndex(2);
 
     int nLevel = GetHitDice(GetFirstPC());
     nPartySize = GetPartyMemberCount();
 
     // Attack Bonus
     // Find average AC of party
-    //nHenchBonus = (GetAC(oPC1) + GetAC(oPC1) + GetAC(oPC1)) / 3;
+    nAttackBonus = GetAC(oPC1) - 11 - ToHitCalc(OBJECT_SELF);
 
+    if (nAttackBonus > 0)
+        ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectAttackIncrease(nAttackBonus), OBJECT_SELF);
 
     // Defense
-    // Find highest attack bonus in party and force power save dc
-    nToHit = ToHitCalc(oPC1);
-    nDC = DC_Calc(oPC1);
-    nAvgAC = GetAC(oPC1);
+    // Find highest attack bonus in party
+    nToHit = ToHitCalc(GetPartyMemberByIndex(0));
 
     if (nPartySize > 1)
     {
-        nHenchBonus = ToHitCalc(oPC2);
+        nHenchBonus = ToHitCalc(GetPartyMemberByIndex(1));
 
         if (nHenchBonus > nToHit)
             nToHit = nHenchBonus;
-
-        nHenchBonus = DC_Calc(oPC2);
-
-        if (nHenchBonus > nDC)
-            nDC = nHenchBonus;
-
-        nAvgAC += GetAC(oPC2);
     }
 
     if (nPartySize > 2)
     {
-        nHenchBonus = ToHitCalc(oPC3);
+        nHenchBonus = ToHitCalc(GetPartyMemberByIndex(2));
 
         if (nHenchBonus > nToHit)
             nToHit = nHenchBonus;
+    }
 
-        nHenchBonus = DC_Calc(oPC3);
+    // to hit + 11 = 50% chance to get hit
+    nDefBonus = (nToHit + 11) - GetAC(OBJECT_SELF);
+
+    if (nDefBonus > 0)
+        ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF);
+
+    // Saves
+    // Find highest force power save dc
+    nDC = DC_Calc(GetPartyMemberByIndex(0));
+
+    if (nPartySize > 1)
+    {
+        nHenchBonus = DC_Calc(GetPartyMemberByIndex(1));
 
         if (nHenchBonus > nDC)
             nDC = nHenchBonus;
-
-        nAvgAC += GetAC(oPC3);
     }
 
-    nAvgAC /= nPartySize;
-    nAttackBonus = nAvgAC - 6 - ToHitCalc(OBJECT_SELF); // -6 = 75% chance to hit
+    if (nPartySize > 2)
+    {
+        nHenchBonus = DC_Calc(GetPartyMemberByIndex(2));
 
-    if (nAttackBonus > 0)
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nAttackBonus), OBJECT_SELF, 3.0);
+        if (nHenchBonus > nDC)
+            nDC = nHenchBonus;
+    }
 
-    // to hit + 11 = 50% chance to get hit
-    nDefBonus = (nToHit + 11) - GetLocalNumber(OBJECT_SELF, 13);
-
-    if (nDefBonus > 0)
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF, 3.0);
-
-    //
     nSaveBonus = nDC - 11 - GetFortitudeSavingThrow(OBJECT_SELF);
     if (nSaveBonus > 0)
         ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
@@ -140,29 +135,25 @@ void Diff_Balance()
     for(i; i > 0; i--)
     {
         // eLink1 = EffectLinkEffects(eLink1, EffectDamageIncrease(5, nDamageType));
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(5, nDamageType), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectDamageIncrease(5, nDamageType), OBJECT_SELF);
     }
 
     // eLink1 = EffectLinkEffects(eLink1, EffectDamageIncrease(nDamage % 5, nDamageType));
-    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(nDamage % 5, nDamageType), OBJECT_SELF, 3.0);
+    ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectDamageIncrease(nDamage % 5, nDamageType), OBJECT_SELF);
 
-    // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, OBJECT_SELF, 3.0);
+    // ApplyEffectToObject(DURATION_TYPE_PERMANENT, eLink1, OBJECT_SELF);
 
-    // Flag that the creature has been buffed
+    //  Flag that the creature has been buffed
     SetLocalBoolean(OBJECT_SELF, 122, TRUE);
-
-    // Loop script
-    DelayCommand(3.0, Diff_Balance());
 }
 
 int ToHitCalc(object oCreature)
 {
     object oOffhand, oItem;
-    object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature);
     string sItem;
 
     int   nToHit, nDex, nStr, i, nType;
-    // float fBAB1, fBAB2;
+    float fBAB1, fBAB2;
 
     /* For Overhaul Mod
     // Calculate BAB from classes
@@ -182,7 +173,7 @@ int ToHitCalc(object oCreature)
     nDex = GetAbilityModifier(ABILITY_DEXTERITY, oCreature);
     nStr = GetAbilityModifier(ABILITY_STRENGTH, oCreature);
 
-    if (GetWeaponRanged(oWeapon)) // ranged weapon add dex
+    if (GetWeaponRanged(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature))) // ranged weapon add dex
         nToHit += nDex;
     else if (GetFeatAcquired(FEAT_FINESSE_MELEE_WEAPONS, oCreature) || // if finesse add greater of str and dex
         GetFeatAcquired(FEAT_FINESSE_LIGHTSABERS, oCreature))
@@ -196,44 +187,22 @@ int ToHitCalc(object oCreature)
         nToHit += nStr;
 
     // Check for feat bonuses
-    nType = GetBaseItemType(oWeapon);
+    if (GetFeatAcquired(FEAT_WEAPON_FOCUS_BLASTER, oCreature) ||
+        GetFeatAcquired(FEAT_WEAPON_FOCUS_BLASTER_RIFLE, oCreature) ||
+        GetFeatAcquired(FEAT_WEAPON_FOCUS_GRENADE, oCreature) ||
+        GetFeatAcquired(FEAT_WEAPON_FOCUS_HEAVY_WEAPONS, oCreature) ||
+        GetFeatAcquired(FEAT_WEAPON_FOCUS_LIGHTSABER, oCreature) ||
+        GetFeatAcquired(FEAT_WEAPON_FOCUS_MELEE_WEAPONS, oCreature) ||
+        GetFeatAcquired(FEAT_WEAPON_FOCUS_SIMPLE_WEAPONS, oCreature)
+    )
+        nToHit += 1;
 
-    if (GetIsObjectValid(oWeapon))
-    {
-        if (GetWeaponRanged(oWeapon))
-        {
-            if (nType == BASE_ITEM_BLASTER_PISTOL ||
-                nType == BASE_ITEM_HEAVY_BLASTER ||
-                nType == BASE_ITEM_HOLD_OUT_BLASTER ||
-                nType == BASE_ITEM_ION_BLASTER ||
-                nType == BASE_ITEM_DISRUPTER_PISTOL ||
-                nType == BASE_ITEM_SONIC_PISTOL)
-            {
-                if (GetFeatAcquired(FEAT_WEAPON_FOCUS_BLASTER, oCreature))
-                    nToHit += 1;
-            }
-            else if (GetFeatAcquired(FEAT_WEAPON_FOCUS_BLASTER_RIFLE, oCreature))
-                nToHit += 1;
-        }
-        else
-        {
-            if(nType == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
-               nType == BASE_ITEM_SHORT_LIGHTSABER ||
-               nType == BASE_ITEM_LIGHTSABER)
-            {
-                if (GetFeatAcquired(FEAT_WEAPON_FOCUS_LIGHTSABER, oCreature))
-                    nToHit += 1;
-                if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_1, oCreature))
-                    nToHit += 1;
-                if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_2, oCreature))
-                    nToHit += 1;
-                if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3, oCreature))
-                    nToHit += 1;
-            }
-            else if (GetFeatAcquired(FEAT_WEAPON_FOCUS_MELEE_WEAPONS, oCreature))
-                nToHit += 1;
-        }
-    }
+        if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_1, oCreature))
+            nToHit += 1;
+    if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_2, oCreature))
+        nToHit += 1;
+    if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3, oCreature))
+        nToHit += 1;
 
     if (GetFeatAcquired(FEAT_TARGETING_1, oCreature) && GetWeaponRanged(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature)))
     {
