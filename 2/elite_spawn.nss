@@ -10,7 +10,7 @@ void ChooseClassBeast(object oEnemy, location lLoc, int nAppearance);
 
 void SpawnElite()
 {
-    if (d100() > 50) // Chance to spawn elite
+    if (d100() > 100) // Chance to spawn elite
     {
         object oEnemy = OBJECT_SELF;
 

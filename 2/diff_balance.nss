@@ -1,37 +1,46 @@
 // diff_balance.nss
 
+#include "k_inc_gensupport"
+
 void Diff_Balance();
 int ToHitCalc(object oCreature);
 int DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nDamage, nDamageType, nWeapon, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize;
-    int nHenchBonus, nAvgAC;
+    int nDamage, nDamageType, nWeaponType, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize;
+    int nHenchBonus, nAvgAC, nAvgVP;
     object oPC1, oPC2, oPC3;
+    object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, OBJECT_SELF);
 
     if (!GetLocalBoolean(OBJECT_SELF, 122))
+    {
         SetLocalNumber(OBJECT_SELF, 13, GetAC(OBJECT_SELF)); // set local number 13 to Original AC
+        SetLocalNumber(OBJECT_SELF, 14, GetFortitudeSavingThrow(OBJECT_SELF)); // set local number 14 to Original fort save
+        SetLocalNumber(OBJECT_SELF, 15, GetReflexSavingThrow(OBJECT_SELF)); // set local number 15 to Original reflex save
+        SetLocalNumber(OBJECT_SELF, 16, GetWillSavingThrow(OBJECT_SELF)); // set local number 16 to Original will save
+    }
 
     oPC1 = GetPartyMemberByIndex(0);
     oPC2 = GetPartyMemberByIndex(1);
     oPC3 = GetPartyMemberByIndex(2);
 
     int nLevel = GetHitDice(GetFirstPC());
-    nPartySize = GetPartyMemberCount();
+    nPartySize = GN_GetActivePartyMemberCount();
 
-    // Attack Bonus
-    // Find average AC of party
-    //nHenchBonus = (GetAC(oPC1) + GetAC(oPC1) + GetAC(oPC1)) / 3;
+    // Creature defenses are based on the highest attack and force power dc of party members
+    // Creature offenses are based on the average of the party's defenses
 
-
-    // Defense
     // Find highest attack bonus in party and force power save dc
-    nToHit = ToHitCalc(oPC1);
-    nDC = DC_Calc(oPC1);
-    nAvgAC = GetAC(oPC1);
+    if (GetIsObjectValid(oPC1) && !GetIsDead(oPC1))
+    {
+        nToHit = ToHitCalc(oPC1);
+        nDC = DC_Calc(oPC1);
+        nAvgAC = GetAC(oPC1);
+        nAvgVP = GetMaxHitPoints(oPC1);
+    }
 
-    if (nPartySize > 1)
+    if (GetIsObjectValid(oPC2) && !GetIsDead(oPC2))
     {
         nHenchBonus = ToHitCalc(oPC2);
 
@@ -44,9 +53,11 @@ void Diff_Balance()
             nDC = nHenchBonus;
 
         nAvgAC += GetAC(oPC2);
+
+        nAvgVP += GetMaxHitPoints(oPC2);
     }
 
-    if (nPartySize > 2)
+    if (GetIsObjectValid(oPC3) && !GetIsDead(oPC3))
     {
         nHenchBonus = ToHitCalc(oPC3);
 
@@ -59,6 +70,8 @@ void Diff_Balance()
             nDC = nHenchBonus;
 
         nAvgAC += GetAC(oPC3);
+
+        nAvgVP += GetMaxHitPoints(oPC3);
     }
 
     nAvgAC /= nPartySize;
@@ -71,20 +84,23 @@ void Diff_Balance()
     nDefBonus = (nToHit + 11) - GetLocalNumber(OBJECT_SELF, 13);
 
     if (nDefBonus > 0)
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectACIncrease(nPartySize, AC_NATURAL_BONUS), OBJECT_SELF, 3.0);
 
-    //
-    nSaveBonus = nDC - 11 - GetFortitudeSavingThrow(OBJECT_SELF);
+    // Save DC - 11 = 50% chance to succeed
+    nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
     if (nSaveBonus > 0)
-        ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+       // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus), OBJECT_SELF, 3.0);
 
-    nSaveBonus = nDC - 11 - GetReflexSavingThrow(OBJECT_SELF);
+    nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
     if (nSaveBonus > 0)
-        ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        // ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus), OBJECT_SELF, 3.0);
 
-    nSaveBonus = nDC - 11 - GetWillSavingThrow(OBJECT_SELF);
+    nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
     if (nSaveBonus > 0)
-        ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        // ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus), OBJECT_SELF, 3.0);
 
     // # of attacks
 
@@ -94,59 +110,63 @@ void Diff_Balance()
     else
         nMaxHp = 12 * nLevel;
 
-    SetMaxHitPoints(OBJECT_SELF, nMaxHp);
+    if (!GetLocalBoolean(OBJECT_SELF, 122))
+        SetMaxHitPoints(OBJECT_SELF, nMaxHp);
 
     // Damage
-    nDamage = GetMaxHitPoints(oPC1) * 2 / 10;
-    nDamage *= nPartySize / 3;
+    nAvgVP /= nPartySize;
+    nDamage = nAvgVP * 1 / 10;
+    nDamage = nDamage * nPartySize / 3;
 
-    // Get damage type
-    nWeapon = GetBaseItemType(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, OBJECT_SELF));
+    // Subtract Strength bonus or not
+    if (!GetWeaponRanged(oWeapon))
+        nDamage -= GetAbilityModifier(ABILITY_STRENGTH, OBJECT_SELF);
 
-    if(nWeapon == BASE_ITEM_BLASTER_PISTOL ||
-        nWeapon == BASE_ITEM_HEAVY_BLASTER ||
-        nWeapon == BASE_ITEM_HOLD_OUT_BLASTER ||
-        nWeapon == BASE_ITEM_BOWCASTER ||
-        nWeapon == BASE_ITEM_BLASTER_CARBINE ||
-        nWeapon == BASE_ITEM_REPEATING_BLASTER ||
-        nWeapon == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
-        nWeapon == BASE_ITEM_BLASTER_RIFLE ||
-        nWeapon == BASE_ITEM_LIGHTSABER ||
-        nWeapon == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
-        nWeapon == BASE_ITEM_SHORT_LIGHTSABER
+    /* // Get damage type
+    nWeaponType = GetBaseItemType(oWeapon);
+
+    if(nWeaponType == BASE_ITEM_BLASTER_PISTOL ||
+        nWeaponType == BASE_ITEM_HEAVY_BLASTER ||
+        nWeaponType == BASE_ITEM_HOLD_OUT_BLASTER ||
+        nWeaponType == BASE_ITEM_BOWCASTER ||
+        nWeaponType == BASE_ITEM_BLASTER_CARBINE ||
+        nWeaponType == BASE_ITEM_REPEATING_BLASTER ||
+        nWeaponType == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
+        nWeaponType == BASE_ITEM_BLASTER_RIFLE ||
+        nWeaponType == BASE_ITEM_LIGHTSABER ||
+        nWeaponType == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
+        nWeaponType == BASE_ITEM_SHORT_LIGHTSABER
     )
         nDamageType = 4096;
 
-    else if(nWeapon == BASE_ITEM_ION_BLASTER ||
-            nWeapon == BASE_ITEM_ION_RIFLE
+    else if(nWeaponType == BASE_ITEM_ION_BLASTER ||
+            nWeaponType == BASE_ITEM_ION_RIFLE
     )
             nDamageType = 2048;
 
-    else if(nWeapon == BASE_ITEM_DISRUPTER_PISTOL ||
-            nWeapon == BASE_ITEM_DISRUPTER_RIFLE
+    else if(nWeaponType == BASE_ITEM_DISRUPTER_PISTOL ||
+            nWeaponType == BASE_ITEM_DISRUPTER_RIFLE
     )
             nDamageType = 8;
 
-    else if(nWeapon == BASE_ITEM_SONIC_PISTOL ||
-            nWeapon == BASE_ITEM_SONIC_RIFLE
+    else if(nWeaponType == BASE_ITEM_SONIC_PISTOL ||
+            nWeaponType == BASE_ITEM_SONIC_RIFLE
     )
             nDamageType = 1024;
     else
-            nDamageType = DAMAGE_TYPE_BLUDGEONING;
+            nDamageType = DAMAGE_TYPE_BLUDGEONING; */
 
-    i = (nDamage / 5); //- 1;
-    //eLink1 = EffectDamageIncrease(5, nDamageType);
+    i = (nDamage / 5);
+    // i = 25 / 5;
 
     for(i; i > 0; i--)
     {
-        // eLink1 = EffectLinkEffects(eLink1, EffectDamageIncrease(5, nDamageType));
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(5, nDamageType), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(5, DAMAGE_TYPE_UNIVERSAL), OBJECT_SELF, 3.0);
     }
 
-    // eLink1 = EffectLinkEffects(eLink1, EffectDamageIncrease(nDamage % 5, nDamageType));
-    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(nDamage % 5, nDamageType), OBJECT_SELF, 3.0);
+    effect eDamage = EffectDamageIncrease(nDamage % 5, DAMAGE_TYPE_UNIVERSAL);
 
-    // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, OBJECT_SELF, 3.0);
+    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDamage, OBJECT_SELF, 3.0);
 
     // Flag that the creature has been buffed
     SetLocalBoolean(OBJECT_SELF, 122, TRUE);
@@ -164,19 +184,21 @@ int ToHitCalc(object oCreature)
     int   nToHit, nDex, nStr, i, nType;
     // float fBAB1, fBAB2;
 
-    /* For Overhaul Mod
+    // For Overhaul Mod
     // Calculate BAB from classes
     int nClass1 = GetClassByPosition(1, oCreature);
     int nLevel1 = GetLevelByClass(nClass1, oCreature);
-    fBAB1 = GetBAB(nClass1);
+    //fBAB1 = GetBAB(nClass1);
 
     int nClass2 = GetClassByPosition(2, oCreature);
     int nLevel2 = GetLevelByClass(nClass2, oCreature);
-    fBAB2 = GetBAB(nClass2);
+    // fBAB2 = GetBAB(nClass2);
 
-    nToHit = FloatToInt((fBAB1 * nLevel1) + (fBAB2 * nLevel2));
-    */
-    nToHit = GetHitDice(oCreature);
+    // nToHit = FloatToInt((fBAB1 * nLevel1) + (fBAB2 * nLevel2));
+
+    // nToHit = GetHitDice(oCreature);
+    nToHit = nLevel1 + nLevel2;
+
 
     // Add ability modifier bonus
     nDex = GetAbilityModifier(ABILITY_DEXTERITY, oCreature);
@@ -185,7 +207,7 @@ int ToHitCalc(object oCreature)
     if (GetWeaponRanged(oWeapon)) // ranged weapon add dex
         nToHit += nDex;
     else if (GetFeatAcquired(FEAT_FINESSE_MELEE_WEAPONS, oCreature) || // if finesse add greater of str and dex
-        GetFeatAcquired(FEAT_FINESSE_LIGHTSABERS, oCreature))
+             GetFeatAcquired(FEAT_FINESSE_LIGHTSABERS, oCreature))
     {
         if (nStr > nDex)
             nToHit += nStr;
@@ -229,13 +251,21 @@ int ToHitCalc(object oCreature)
                     nToHit += 1;
                 if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3, oCreature))
                     nToHit += 1;
+
+                // Check Lightsaber forms
+                if (IsFormActive(oCreature, FORM_SABER_I_SHII_CHO))
+                    nToHit += 1;
+                if (IsFormActive(oCreature, FORM_SABER_V_SHIEN))
+                    nToHit += 2;
+                if (IsFormActive(oCreature, FORM_SABER_VI_NIMAN))
+                    nToHit += 1;
             }
             else if (GetFeatAcquired(FEAT_WEAPON_FOCUS_MELEE_WEAPONS, oCreature))
                 nToHit += 1;
         }
     }
 
-    if (GetFeatAcquired(FEAT_TARGETING_1, oCreature) && GetWeaponRanged(GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature)))
+    if (GetFeatAcquired(FEAT_TARGETING_1, oCreature) && GetWeaponRanged(oWeapon))
     {
         nToHit += 1;
         i = FEAT_TARGETING_2;
@@ -283,24 +313,19 @@ int ToHitCalc(object oCreature)
             nToHit -= 6;
     }
 
-    // Check Lightsaber forms
-    if (IsFormActive(oCreature, FORM_SABER_I_SHII_CHO))
-        nToHit += 1;
-    if (IsFormActive(oCreature, FORM_SABER_V_SHIEN))
-        nToHit += 2;
-    if (IsFormActive(oCreature, FORM_SABER_VI_NIMAN))
-        nToHit += 1;
-
     // Force Power Effects
-    if (GetHasSpellEffect(FORCE_POWER_MASTER_BATTLE_MEDITATION_PC, oCreature))
-        nToHit += 4;
-    else if (GetHasSpellEffect(FORCE_POWER_IMPROVED_BATTLE_MEDITATION_PC, oCreature) ||
-        GetHasSpellEffect(FORCE_POWER_BATTLE_MEDITATION_PC, oCreature)
-    )
-        nToHit += 2;
+    if (IsObjectPartyMember(oCreature))
+    {
+        if (GetHasSpellEffect(FORCE_POWER_MASTER_BATTLE_MEDITATION_PC, oCreature))
+            nToHit += 4;
+        else if (GetHasSpellEffect(FORCE_POWER_IMPROVED_BATTLE_MEDITATION_PC, oCreature) ||
+            GetHasSpellEffect(FORCE_POWER_BATTLE_MEDITATION_PC, oCreature)
+        )
+            nToHit += 2;
+    }
 
-        if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_V, oCreature))
-            nToHit += 5;
+    if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_V, oCreature))
+        nToHit += 5;
     else if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_IV, oCreature))
         nToHit += 4;
     else if (GetHasSpellEffect(FORCE_POWER_INSPIRE_FOLLOWERS_III, oCreature))
@@ -326,8 +351,8 @@ int ToHitCalc(object oCreature)
             sItem == "a_helmet_08"
         )
             nToHit += 1;
-            if (sItem == "a_helmet_24")
-                nToHit += 2;
+        if (sItem == "a_helmet_24")
+            nToHit += 2;
         if (sItem == "a_helmet_16")
             nToHit += 3;
     }
@@ -391,35 +416,28 @@ int ToHitCalc(object oCreature)
             )
                 nToHit += 2;
 
-                if (sItem == "w_blaste_19" ||
-                    sItem == "w_brifle_21"
-                )
-                    nToHit += 3;
+            if (sItem == "w_blaste_19" ||
+                sItem == "w_brifle_21"
+            )
+                nToHit += 3;
 
-                    if (sItem == "w_brifle_23")
-                        nToHit += 4;
+            if (sItem == "w_brifle_23")
+                nToHit += 4;
     }
 
     // Add bonus based on level to account for items
     if (IsObjectPartyMember(oCreature))
         nToHit += (GetHitDice(oCreature) / 4);
 
-    return nToHit;
+    if (nToHit > 0)
+        return nToHit;
+    else
+        return 0;
 }
 
 int DC_Calc(object oCreature)
 {
     int nDC = 0, i = 0;
-
-    /*
-    // Get highest spell dc in party
-    for (i; i > 2; i++)
-    {
-        oCreature = GetPartyMemberByIndex(i);
-
-        if (nDC < (5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature)))
-            nDC = 5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature);
-    } */
 
     nDC = 5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature);
 
