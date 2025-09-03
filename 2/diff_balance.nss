@@ -8,8 +8,8 @@ int DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nDamage, nDamageType, nWeaponType, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize;
-    int nHenchBonus, nAvgAC, nAvgVP;
+    int nDamage, nDamageType, nWeaponType, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize = 0;
+    int nHenchBonus, nAvgAC, nAvgVP, nLevelDiff;
     object oPC1, oPC2, oPC3;
     object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, OBJECT_SELF);
 
@@ -25,8 +25,16 @@ void Diff_Balance()
     oPC2 = GetPartyMemberByIndex(1);
     oPC3 = GetPartyMemberByIndex(2);
 
-    int nLevel = GetHitDice(GetFirstPC());
-    nPartySize = GN_GetActivePartyMemberCount();
+    if(GetIsObjectValid(oPC1) && GetCurrentHitPoints(oPC1) > 0)
+        nPartySize++;
+    if(GetIsObjectValid(oPC2) && GetCurrentHitPoints(oPC2) > 0)
+        nPartySize++;
+    if(GetIsObjectValid(oPC3) && GetCurrentHitPoints(oPC3) > 0)
+        nPartySize++;
+
+    int nPC_Level = GetHitDice(GetFirstPC());
+    int nCreatureLevel = GetLevelByClass(GetClassByPosition(1, OBJECT_SELF), OBJECT_SELF);
+    // nPartySize = GN_GetActivePartyMemberCount();
 
     // Creature defenses are based on the highest attack and force power dc of party members
     // Creature offenses are based on the average of the party's defenses
@@ -90,25 +98,27 @@ void Diff_Balance()
     nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
     if (nSaveBonus > 0)
        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus, SAVING_THROW_TYPE_POISON), OBJECT_SELF, 3.0);
 
     nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
     if (nSaveBonus > 0)
         // ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
 
     nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
-    if (nSaveBonus > 0)
+    // if (nSaveBonus > 0)
         // ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_TYPE_ALL, 20, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
 
     // # of attacks
 
     // VP
-    if (nLevel > 15)
-        nMaxHp = 12 * 15 + (nLevel - 15) * 49;
-    else
-        nMaxHp = 12 * nLevel;
+    nLevelDiff = nPC_Level - nCreatureLevel;
+
+    // if (nLevelDiff >= 15)
+    //    nMaxHp = 12 * 15 + (nLevelDiff - 15) * 49;
+    //else
+        nMaxHp = 12 * nLevelDiff;
 
     if (!GetLocalBoolean(OBJECT_SELF, 122))
         SetMaxHitPoints(OBJECT_SELF, nMaxHp);
@@ -196,7 +206,7 @@ int ToHitCalc(object oCreature)
 
     // nToHit = FloatToInt((fBAB1 * nLevel1) + (fBAB2 * nLevel2));
 
-    // nToHit = GetHitDice(oCreature);
+    // nToHit = GetHitDice(oCreature); // doesn't work for some reason??'
     nToHit = nLevel1 + nLevel2;
 
 
@@ -204,17 +214,17 @@ int ToHitCalc(object oCreature)
     nDex = GetAbilityModifier(ABILITY_DEXTERITY, oCreature);
     nStr = GetAbilityModifier(ABILITY_STRENGTH, oCreature);
 
-    if (GetWeaponRanged(oWeapon)) // ranged weapon add dex
+    if (GetWeaponRanged(oWeapon) && nDex > 0) // ranged weapon add dex
         nToHit += nDex;
     else if (GetFeatAcquired(FEAT_FINESSE_MELEE_WEAPONS, oCreature) || // if finesse add greater of str and dex
              GetFeatAcquired(FEAT_FINESSE_LIGHTSABERS, oCreature))
     {
-        if (nStr > nDex)
+        if (nStr > nDex && nStr > 0)
             nToHit += nStr;
-        else
+        else if (nDex > 0)
             nToHit += nDex;
     }
-    else
+    else if (nStr > 0)
         nToHit += nStr;
 
     // Check for feat bonuses
