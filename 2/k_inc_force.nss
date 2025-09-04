@@ -10,7 +10,7 @@ float fLightningDuration = 1.0;
 
 //These variables are set in the script run area.
 int SWFP_PRIVATE_SAVE_TYPE;
-int SWFP_PRIVATE_SAVE_VERSUS_TYPE;
+int SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FORCE_POWER;
 int SWFP_DAMAGE;
 int SWFP_DAMAGE_TYPE;
 int SWFP_DAMAGE_VFX;
@@ -958,7 +958,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_DARK_SIDE;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_DARK_SIDE;
             int nDamTest = GetHitDice(OBJECT_SELF);
             if(nDamTest > 10)
             {
@@ -1127,7 +1127,7 @@ void  Sp_RunForcePowers()
             SWFP_HARMFUL = TRUE;
             //SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_REFLEX;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;//RWT-OEI 09/27/04
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
 
             float fRange = Sp_CalcRange( 6.0 );
 
@@ -1326,7 +1326,7 @@ void  Sp_RunForcePowers()
             SWFP_HARMFUL = TRUE;
             //SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_REFLEX;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;//RWT-OEI 09/27/04
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
 
             float fRange = Sp_CalcRange( 5.0 );
 
@@ -1513,7 +1513,7 @@ void  Sp_RunForcePowers()
             {//Otherwise target is a droid, so handle the existing way.
                 SWFP_HARMFUL = TRUE;
                 SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-                SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+                // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
 
                 // DJS-OEI 3/25/2004
                 SWFP_DAMAGE = Sp_CalcDamage( oTarget, 0, 0, GetHitDice(OBJECT_SELF) );
@@ -1564,7 +1564,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
 
             eLink1 = EffectHorrified();
             eLink1 = EffectLinkEffects(eLink1, EffectVisualEffect(1041));
@@ -2421,7 +2421,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
 
             float fRange = Sp_CalcRange( 5.0 );
 
@@ -2441,7 +2441,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
 
             float fRange = Sp_CalcRange( 10.0 );
 
@@ -2678,7 +2678,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
             int nDice = GetHitDice(OBJECT_SELF);
             // DJS-OEI 10/7/2004
             // Removed cap.
@@ -3137,7 +3137,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
             int nDice = GetHitDice(OBJECT_SELF);
             // DJS-OEI 10/7/2004
             // Removed cap.
@@ -3448,7 +3448,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_MIND_AFFECTING;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_MIND_AFFECTING;
 
             eLink1 = EffectStunned();
             //eLink1 = EffectLinkEffects(eLink1, EffectVisualEffect(VFX_DUR_HOLD));
@@ -4706,7 +4706,7 @@ void  Sp_RunForcePowers()
             // targets in a cone extending from the caster's location.
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_SONIC;
+            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_SONIC;
 
             // Each version of the spell causes differing amounts of damage.
             int nDamageRolls;

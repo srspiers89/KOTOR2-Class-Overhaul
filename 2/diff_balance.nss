@@ -1,15 +1,15 @@
 // diff_balance.nss
-
-#include "k_inc_gensupport"
+// To do: add droid items to ToHitCalc, subtract base weapon damage from bonus damage
 
 void Diff_Balance();
 int ToHitCalc(object oCreature);
-int DC_Calc(object oCreature);
+int FP_DC_Calc(object oCreature);
+int Save_DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nDamage, nDamageType, nWeaponType, i, nMaxHp, nToHit, nAttackBonus, nDefBonus, nSaveBonus, nDC, nPartySize = 0;
-    int nHenchBonus, nAvgAC, nAvgVP, nLevelDiff;
+    int nDamage, nDamageType, nWeaponType, i, nMaxHp, nAttackBonus, nDefBonus, nSaveBonus, nPartySize = 0;
+    int nToHit = 0, nFP_DC = 0, nSaveDC = 0, nHenchBonus, nAvgAC = 0, nAvgVP = 0, nLevelDiff;
     object oPC1, oPC2, oPC3;
     object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, OBJECT_SELF);
 
@@ -34,7 +34,6 @@ void Diff_Balance()
 
     int nPC_Level = GetHitDice(GetFirstPC());
     int nCreatureLevel = GetLevelByClass(GetClassByPosition(1, OBJECT_SELF), OBJECT_SELF);
-    // nPartySize = GN_GetActivePartyMemberCount();
 
     // Creature defenses are based on the highest attack and force power dc of party members
     // Creature offenses are based on the average of the party's defenses
@@ -42,10 +41,24 @@ void Diff_Balance()
     // Find highest attack bonus in party and force power save dc
     if (GetIsObjectValid(oPC1) && !GetIsDead(oPC1))
     {
-        nToHit = ToHitCalc(oPC1);
-        nDC = DC_Calc(oPC1);
-        nAvgAC = GetAC(oPC1);
-        nAvgVP = GetMaxHitPoints(oPC1);
+        nHenchBonus = ToHitCalc(oPC1);
+
+        if (nHenchBonus > nToHit)
+            nToHit = nHenchBonus;
+
+        nHenchBonus = Save_DC_Calc(oPC1);
+
+        if (nHenchBonus > nSaveDC)
+            nSaveDC = nHenchBonus;
+
+        nHenchBonus = FP_DC_Calc(oPC1);
+
+        if (nHenchBonus > nFP_DC)
+            nFP_DC = nHenchBonus;
+
+        nAvgAC += GetAC(oPC1);
+
+        nAvgVP += GetMaxHitPoints(oPC1);
     }
 
     if (GetIsObjectValid(oPC2) && !GetIsDead(oPC2))
@@ -55,10 +68,15 @@ void Diff_Balance()
         if (nHenchBonus > nToHit)
             nToHit = nHenchBonus;
 
-        nHenchBonus = DC_Calc(oPC2);
+        nHenchBonus = Save_DC_Calc(oPC2);
 
-        if (nHenchBonus > nDC)
-            nDC = nHenchBonus;
+        if (nHenchBonus > nSaveDC)
+            nSaveDC = nHenchBonus;
+
+        nHenchBonus = FP_DC_Calc(oPC2);
+
+        if (nHenchBonus > nFP_DC)
+            nFP_DC = nHenchBonus;
 
         nAvgAC += GetAC(oPC2);
 
@@ -72,10 +90,15 @@ void Diff_Balance()
         if (nHenchBonus > nToHit)
             nToHit = nHenchBonus;
 
-        nHenchBonus = DC_Calc(oPC3);
+        nHenchBonus = Save_DC_Calc(oPC3);
 
-        if (nHenchBonus > nDC)
-            nDC = nHenchBonus;
+        if (nHenchBonus > nSaveDC)
+            nSaveDC = nHenchBonus;
+
+        nHenchBonus = FP_DC_Calc(oPC3);
+
+        if (nHenchBonus > nFP_DC)
+            nFP_DC = nHenchBonus;
 
         nAvgAC += GetAC(oPC3);
 
@@ -92,23 +115,40 @@ void Diff_Balance()
     nDefBonus = (nToHit + 11) - GetLocalNumber(OBJECT_SELF, 13);
 
     if (nDefBonus > 0)
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectACIncrease(nPartySize, AC_NATURAL_BONUS), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF, 3.0);
 
     // Save DC - 11 = 50% chance to succeed
-    nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
+    // Apply regular save bonus
+    nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
     if (nSaveBonus > 0)
        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus, SAVING_THROW_TYPE_POISON), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus), OBJECT_SELF, 3.0);
 
-    nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
+    // Apply force power save bonus
+    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 14) - nSaveBonus;
+    if (nSaveBonus > 0)
+        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
+
+    nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
     if (nSaveBonus > 0)
         // ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus), OBJECT_SELF, 3.0);
+
+    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 15) - nSaveBonus;
+    if (nSaveBonus > 0)
+        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
 
-    nSaveBonus = nDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
-    // if (nSaveBonus > 0)
+    nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
+    if (nSaveBonus > 0)
         // ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_TYPE_ALL, 20, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus), OBJECT_SELF, 3.0);
+
+    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 16) - nSaveBonus;
+    if (nSaveBonus > 0)
+        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
 
     // # of attacks
 
@@ -126,13 +166,13 @@ void Diff_Balance()
     // Damage
     nAvgVP /= nPartySize;
     nDamage = nAvgVP * 1 / 10;
-    nDamage = nDamage * nPartySize / 3;
+    // nDamage = nDamage * nPartySize / 3;
 
     // Subtract Strength bonus or not
     if (!GetWeaponRanged(oWeapon))
         nDamage -= GetAbilityModifier(ABILITY_STRENGTH, OBJECT_SELF);
 
-    /* // Get damage type
+    /* // Get base damage of weapon
     nWeaponType = GetBaseItemType(oWeapon);
 
     if(nWeaponType == BASE_ITEM_BLASTER_PISTOL ||
@@ -445,9 +485,9 @@ int ToHitCalc(object oCreature)
         return 0;
 }
 
-int DC_Calc(object oCreature)
+int FP_DC_Calc(object oCreature)
 {
-    int nDC = 0, i = 0;
+    int nDC;
 
     nDC = 5 + GetHitDice(oCreature) + GetAbilityModifier(ABILITY_WISDOM, oCreature) + GetAbilityModifier(ABILITY_CHARISMA, oCreature);
 
@@ -462,6 +502,15 @@ int DC_Calc(object oCreature)
     // Check for Force Forms modifying dc
     if (IsFormActive(oCreature, FORM_FORCE_IV_MASTERY))
         nDC += 2;
+
+    return nDC;
+}
+
+int Save_DC_Calc(object oCreature)
+{
+    int nDC;
+
+    nDC = GetHitDice(oCreature) + 3 + GetAbilityModifier(ABILITY_INTELLIGENCE, oCreature);
 
     return nDC;
 }
