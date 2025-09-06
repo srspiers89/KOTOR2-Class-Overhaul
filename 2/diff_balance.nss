@@ -1,5 +1,5 @@
 // diff_balance.nss
-// To do: add droid items to ToHitCalc, subtract base weapon damage from bonus damage
+// To do: add droid items to ToHitCalc
 
 void Diff_Balance();
 int ToHitCalc(object oCreature);
@@ -8,7 +8,7 @@ int Save_DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nDamage, nDamageType, nWeaponType, i, nMaxHp, nAttackBonus, nDefBonus, nSaveBonus, nPartySize = 0;
+    int nDamage, nWeaponType, i, nMaxHp, nAttackBonus, nDefBonus, nSaveBonus, nPartySize = 0;
     int nToHit = 0, nFP_DC = 0, nSaveDC = 0, nHenchBonus, nAvgAC = 0, nAvgVP = 0, nLevelDiff;
     object oPC1, oPC2, oPC3;
     object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, OBJECT_SELF);
@@ -119,35 +119,31 @@ void Diff_Balance()
 
     // Save DC - 11 = 50% chance to succeed
     // Apply regular save bonus
-    nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
+    nSaveBonus = nPC_Level; // for non-overhaul vanilla game
+
+    //nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
     if (nSaveBonus > 0)
-       // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus), OBJECT_SELF, 3.0);
 
-    // Apply force power save bonus
-    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 14) - nSaveBonus;
+    //nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
     if (nSaveBonus > 0)
-        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
-
-    nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
-    if (nSaveBonus > 0)
-        // ModifyReflexSavingThrowBase(OBJECT_SELF, nSaveBonus);
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus), OBJECT_SELF, 3.0);
 
-    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 15) - nSaveBonus;
+    //nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
     if (nSaveBonus > 0)
-        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
-
-    nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
-    if (nSaveBonus > 0)
-        // ModifyWillSavingThrowBase(OBJECT_SELF, nSaveBonus);
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus), OBJECT_SELF, 3.0);
 
-    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 16) - nSaveBonus;
+    // Apply force power save bonus
+    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 14) - (nPC_Level);
     if (nSaveBonus > 0)
-        // ModifyFortitudeSavingThrowBase(OBJECT_SELF, nSaveBonus);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
+
+    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 15) - (nPC_Level);
+    if (nSaveBonus > 0)
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
+
+    nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 16) - (nPC_Level);
+    if (nSaveBonus > 0)
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
 
     // # of attacks
@@ -163,48 +159,73 @@ void Diff_Balance()
     if (!GetLocalBoolean(OBJECT_SELF, 122))
         SetMaxHitPoints(OBJECT_SELF, nMaxHp);
 
-    // Damage
+    // Bonus damage = to a % of the average hp of party
     nAvgVP /= nPartySize;
-    nDamage = nAvgVP * 1 / 10;
+    nDamage = nAvgVP * 14 / 100;
     // nDamage = nDamage * nPartySize / 3;
 
     // Subtract Strength bonus or not
-    if (!GetWeaponRanged(oWeapon))
+    if (!GetWeaponRanged(oWeapon) && (GetAbilityModifier(ABILITY_STRENGTH, OBJECT_SELF) > 0))
         nDamage -= GetAbilityModifier(ABILITY_STRENGTH, OBJECT_SELF);
 
-    /* // Get base damage of weapon
+    // Get base damage of weapon and subtract it
     nWeaponType = GetBaseItemType(oWeapon);
 
-    if(nWeaponType == BASE_ITEM_BLASTER_PISTOL ||
-        nWeaponType == BASE_ITEM_HEAVY_BLASTER ||
-        nWeaponType == BASE_ITEM_HOLD_OUT_BLASTER ||
-        nWeaponType == BASE_ITEM_BOWCASTER ||
-        nWeaponType == BASE_ITEM_BLASTER_CARBINE ||
-        nWeaponType == BASE_ITEM_REPEATING_BLASTER ||
-        nWeaponType == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
-        nWeaponType == BASE_ITEM_BLASTER_RIFLE ||
-        nWeaponType == BASE_ITEM_LIGHTSABER ||
-        nWeaponType == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
-        nWeaponType == BASE_ITEM_SHORT_LIGHTSABER
+    if(nWeaponType == BASE_ITEM_HOLD_OUT_BLASTER ||
+       nWeaponType == BASE_ITEM_SONIC_PISTOL
     )
-        nDamageType = 4096;
+        nDamage -= d4();
 
-    else if(nWeaponType == BASE_ITEM_ION_BLASTER ||
-            nWeaponType == BASE_ITEM_ION_RIFLE
+    else if(nWeaponType == BASE_ITEM_QUARTER_STAFF ||
+            nWeaponType == BASE_ITEM_SHORT_SWORD ||
+            nWeaponType == BASE_ITEM_ION_BLASTER ||
+            nWeaponType == BASE_ITEM_DISRUPTER_PISTOL
     )
-            nDamageType = 2048;
+            nDamage -= d6();
 
-    else if(nWeaponType == BASE_ITEM_DISRUPTER_PISTOL ||
-            nWeaponType == BASE_ITEM_DISRUPTER_RIFLE
+    else if(nWeaponType == BASE_ITEM_BLASTER_PISTOL ||
+            nWeaponType == BASE_ITEM_GHAFFI_STICK
     )
-            nDamageType = 8;
+            nDamage -= d8();
 
-    else if(nWeaponType == BASE_ITEM_SONIC_PISTOL ||
-            nWeaponType == BASE_ITEM_SONIC_RIFLE
+    else if(nWeaponType == BASE_ITEM_VIBRO_BLADE ||
+            nWeaponType == BASE_ITEM_HEAVY_BLASTER ||
+            nWeaponType == BASE_ITEM_ION_RIFLE ||
+            nWeaponType == BASE_ITEM_BOWCASTER ||
+            nWeaponType == BASE_ITEM_DISRUPTER_RIFLE ||
+            nWeaponType == BASE_ITEM_SONIC_RIFLE ||
+            nWeaponType == BASE_ITEM_WOOKIE_WARBLADE
     )
-            nDamageType = 1024;
-    else
-            nDamageType = DAMAGE_TYPE_BLUDGEONING; */
+            nDamage -= d10();
+
+    else if(nWeaponType == BASE_ITEM_GAMMOREAN_BATTLEAXE ||
+            nWeaponType == BASE_ITEM_LONG_SWORD ||
+            nWeaponType == BASE_ITEM_BLASTER_CARBINE ||
+            nWeaponType == BASE_ITEM_BLASTER_RIFLE
+    )
+            nDamage -= d12();
+
+    else if(nWeaponType == BASE_ITEM_VIBRO_SWORD ||
+            nWeaponType == BASE_ITEM_DOUBLE_BLADED_SWORD ||
+            nWeaponType == BASE_ITEM_REPEATING_BLASTER ||
+            nWeaponType == BASE_ITEM_FORCE_PIKE
+    )
+            nDamage -= d6(2);
+
+    else if(nWeaponType == BASE_ITEM_SHORT_LIGHTSABER ||
+            nWeaponType == BASE_ITEM_VIBRO_DOUBLE_BLADE ||
+            nWeaponType == BASE_ITEM_HEAVY_REPEATING_BLASTER
+    )
+            nDamage -= d8(2);
+
+    else if(nWeaponType == BASE_ITEM_LIGHTSABER)
+            nDamage -= d10(2);
+
+    else if(nWeaponType == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER)
+            nDamage -= d12(2);
+
+    if (nDamage < 0)
+        nDamage = 0;
 
     i = (nDamage / 5);
     // i = 25 / 5;
@@ -214,9 +235,11 @@ void Diff_Balance()
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(5, DAMAGE_TYPE_UNIVERSAL), OBJECT_SELF, 3.0);
     }
 
-    effect eDamage = EffectDamageIncrease(nDamage % 5, DAMAGE_TYPE_UNIVERSAL);
-
-    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDamage, OBJECT_SELF, 3.0);
+    if (nDamage > 0)
+    {
+        effect eDamage = EffectDamageIncrease(nDamage % 5, DAMAGE_TYPE_UNIVERSAL);
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDamage, OBJECT_SELF, 3.0);
+    }
 
     // Flag that the creature has been buffed
     SetLocalBoolean(OBJECT_SELF, 122, TRUE);
@@ -236,18 +259,18 @@ int ToHitCalc(object oCreature)
 
     // For Overhaul Mod
     // Calculate BAB from classes
-    int nClass1 = GetClassByPosition(1, oCreature);
-    int nLevel1 = GetLevelByClass(nClass1, oCreature);
+    int nClass = GetClassByPosition(1, oCreature);
+    int nLevel = GetLevelByClass(nClass, oCreature);
     //fBAB1 = GetBAB(nClass1);
 
-    int nClass2 = GetClassByPosition(2, oCreature);
-    int nLevel2 = GetLevelByClass(nClass2, oCreature);
+    nClass = GetClassByPosition(2, oCreature);
+    nLevel += GetLevelByClass(nClass, oCreature);
     // fBAB2 = GetBAB(nClass2);
 
     // nToHit = FloatToInt((fBAB1 * nLevel1) + (fBAB2 * nLevel2));
 
     // nToHit = GetHitDice(oCreature); // doesn't work for some reason??'
-    nToHit = nLevel1 + nLevel2;
+    nToHit = nLevel;
 
 
     // Add ability modifier bonus
@@ -349,18 +372,26 @@ int ToHitCalc(object oCreature)
             nType == BASE_ITEM_SONIC_PISTOL ||
             nType == BASE_ITEM_GHAFFI_STICK ||
             nType == BASE_ITEM_WOOKIE_WARBLADE ||
-            nType == BASE_ITEM_FORCE_PIKE
-        )
-            nToHit += 2;
+            nType == BASE_ITEM_FORCE_PIKE)
+        {
+            if (!IsObjectPartyMember(oCreature) || GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_2, oCreature)
+                || GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3, oCreature))
+                nToHit += 2;
+            else if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_1, oCreature))
+                nToHit += 1;
+        }
 
-        if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_1, oCreature))
+        if (!IsObjectPartyMember(oCreature))
+        {
+            if (GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_1, oCreature))
                 nToHit -= 1;
-        else if (GetFeatAcquired(85, oCreature)) // Master Two-Weapon Fighting
-            nToHit -= 2;
-        else if (GetFeatAcquired(9, oCreature)) // Improved Two-Weapon Fighting
-            nToHit -= 4;
-        else
-            nToHit -= 6;
+            else if (GetFeatAcquired(85, oCreature)) // Master Two-Weapon Fighting
+                nToHit -= 2;
+            else if (GetFeatAcquired(9, oCreature)) // Improved Two-Weapon Fighting
+                nToHit -= 4;
+            else
+                nToHit -= 6;
+        }
     }
 
     // Force Power Effects
