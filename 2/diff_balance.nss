@@ -19,6 +19,7 @@ void Diff_Balance()
         SetLocalNumber(OBJECT_SELF, 14, GetFortitudeSavingThrow(OBJECT_SELF)); // set local number 14 to Original fort save
         SetLocalNumber(OBJECT_SELF, 15, GetReflexSavingThrow(OBJECT_SELF)); // set local number 15 to Original reflex save
         SetLocalNumber(OBJECT_SELF, 16, GetWillSavingThrow(OBJECT_SELF)); // set local number 16 to Original will save
+        SetLocalNumber(OBJECT_SELF, 17, ToHitCalc(OBJECT_SELF)); // set local number 17 to Original attack bonus
     }
 
     oPC1 = GetPartyMemberByIndex(0);
@@ -106,7 +107,7 @@ void Diff_Balance()
     }
 
     nAvgAC /= nPartySize;
-    nAttackBonus = nAvgAC - 6 - ToHitCalc(OBJECT_SELF); // -6 = 75% chance to hit
+    nAttackBonus = nAvgAC - 6 - GetLocalNumber(OBJECT_SELF, 17); // -6 = 75% chance to hit
 
     if (nAttackBonus > 0)
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nAttackBonus), OBJECT_SELF, 3.0);
@@ -254,7 +255,7 @@ int ToHitCalc(object oCreature)
     object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, oCreature);
     string sItem;
 
-    int   nToHit, nDex, nStr, i, nType;
+    int   nToHit, nDex, nStr, i, nType1, nType2;
     // float fBAB1, fBAB2;
 
     // For Overhaul Mod
@@ -291,18 +292,18 @@ int ToHitCalc(object oCreature)
         nToHit += nStr;
 
     // Check for feat bonuses
-    nType = GetBaseItemType(oWeapon);
+    nType1 = GetBaseItemType(oWeapon);
 
     if (GetIsObjectValid(oWeapon))
     {
         if (GetWeaponRanged(oWeapon))
         {
-            if (nType == BASE_ITEM_BLASTER_PISTOL ||
-                nType == BASE_ITEM_HEAVY_BLASTER ||
-                nType == BASE_ITEM_HOLD_OUT_BLASTER ||
-                nType == BASE_ITEM_ION_BLASTER ||
-                nType == BASE_ITEM_DISRUPTER_PISTOL ||
-                nType == BASE_ITEM_SONIC_PISTOL)
+            if (nType1 == BASE_ITEM_BLASTER_PISTOL ||
+                nType1 == BASE_ITEM_HEAVY_BLASTER ||
+                nType1 == BASE_ITEM_HOLD_OUT_BLASTER ||
+                nType1 == BASE_ITEM_ION_BLASTER ||
+                nType1 == BASE_ITEM_DISRUPTER_PISTOL ||
+                nType1 == BASE_ITEM_SONIC_PISTOL)
             {
                 if (GetFeatAcquired(FEAT_WEAPON_FOCUS_BLASTER, oCreature))
                     nToHit += 1;
@@ -312,9 +313,9 @@ int ToHitCalc(object oCreature)
         }
         else
         {
-            if(nType == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
-               nType == BASE_ITEM_SHORT_LIGHTSABER ||
-               nType == BASE_ITEM_LIGHTSABER)
+            if(nType1 == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
+               nType1 == BASE_ITEM_SHORT_LIGHTSABER ||
+               nType1 == BASE_ITEM_LIGHTSABER)
             {
                 if (GetFeatAcquired(FEAT_WEAPON_FOCUS_LIGHTSABER, oCreature))
                     nToHit += 1;
@@ -354,25 +355,33 @@ int ToHitCalc(object oCreature)
 
     // Two-weapon fighting Calculation
     oOffhand = GetItemInSlot(INVENTORY_SLOT_LEFTWEAPON, oCreature);
-    nType = GetBaseItemType(oOffhand);
+    nType2 = GetBaseItemType(oOffhand);
 
-    if (GetIsObjectValid(oOffhand))
+    if (GetIsObjectValid(oOffhand) ||
+        nType1 == BASE_ITEM_DOUBLE_BLADED_SWORD ||
+        nType1 == BASE_ITEM_VIBRO_DOUBLE_BLADE ||
+        nType1 == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
+        nType1 == BASE_ITEM_GHAFFI_STICK ||
+        nType1 == BASE_ITEM_WOOKIE_WARBLADE ||
+        nType1 == BASE_ITEM_QUARTER_STAFF ||
+        nType1 == BASE_ITEM_FORCE_PIKE)
     {
-        if (nType == BASE_ITEM_SHORT_SWORD ||
-            nType == BASE_ITEM_VIBRO_BLADE ||
-            nType == BASE_ITEM_DOUBLE_BLADED_SWORD ||
-            nType == BASE_ITEM_VIBRO_DOUBLE_BLADE ||
-            nType == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
-            nType == BASE_ITEM_SHORT_LIGHTSABER ||
-            nType == BASE_ITEM_BLASTER_PISTOL ||
-            nType == BASE_ITEM_HEAVY_BLASTER ||
-            nType == BASE_ITEM_HOLD_OUT_BLASTER ||
-            nType == BASE_ITEM_ION_BLASTER ||
-            nType == BASE_ITEM_DISRUPTER_PISTOL ||
-            nType == BASE_ITEM_SONIC_PISTOL ||
-            nType == BASE_ITEM_GHAFFI_STICK ||
-            nType == BASE_ITEM_WOOKIE_WARBLADE ||
-            nType == BASE_ITEM_FORCE_PIKE)
+        if (nType2 == BASE_ITEM_SHORT_SWORD ||
+            nType2 == BASE_ITEM_VIBRO_BLADE ||
+            nType1 == BASE_ITEM_QUARTER_STAFF ||
+            nType1 == BASE_ITEM_DOUBLE_BLADED_SWORD ||
+            nType1 == BASE_ITEM_VIBRO_DOUBLE_BLADE ||
+            nType1 == BASE_ITEM_DOUBLE_BLADED_LIGHTSABER ||
+            nType2 == BASE_ITEM_SHORT_LIGHTSABER ||
+            nType2 == BASE_ITEM_BLASTER_PISTOL ||
+            nType2 == BASE_ITEM_HEAVY_BLASTER ||
+            nType2 == BASE_ITEM_HOLD_OUT_BLASTER ||
+            nType2 == BASE_ITEM_ION_BLASTER ||
+            nType2 == BASE_ITEM_DISRUPTER_PISTOL ||
+            nType2 == BASE_ITEM_SONIC_PISTOL ||
+            nType1 == BASE_ITEM_GHAFFI_STICK ||
+            nType1 == BASE_ITEM_WOOKIE_WARBLADE ||
+            nType1 == BASE_ITEM_FORCE_PIKE)
         {
             if (!IsObjectPartyMember(oCreature) || GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_2, oCreature)
                 || GetFeatAcquired(FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3, oCreature))
@@ -510,10 +519,10 @@ int ToHitCalc(object oCreature)
     if (IsObjectPartyMember(oCreature))
         nToHit += (GetHitDice(oCreature) / 4);
 
-    if (nToHit > 0)
+    //if (nToHit > 0)
         return nToHit;
-    else
-        return 0;
+    //else
+    //    return 0;
 }
 
 int FP_DC_Calc(object oCreature)
