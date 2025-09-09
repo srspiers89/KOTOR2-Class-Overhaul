@@ -603,6 +603,7 @@ void main()
             }
 
             Fury();
+            Resolve();
 
             /*
             effect eEliteSpawn = EffectAreaOfEffect(3);

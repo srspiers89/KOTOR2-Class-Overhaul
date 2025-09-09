@@ -2,6 +2,7 @@
 //
 // Include file for my feats and force powers that use the onheartbeat event
 
+void Resolve();
 void Fury();
 float GetBAB(int nClass);
 
@@ -88,4 +89,23 @@ float GetBAB(int nClass)
     }
 
     return fBAB;
+}
+
+void Resolve()
+{
+    /*
+    int nType;
+    effect eEffect = GetFirstEffect(OBJECT_SELF);
+
+    while (GetIsEffectValid(eEffect))
+    {
+        nType = GetEffectType(eEffect);
+
+        if (nType == EFFECT_TYPE_TEMPORARY_HITPOINTS)
+            RemoveEffect(OBJECT_SELF, eEffect);
+
+        eEffect = GetNextEffect(OBJECT_SELF);
+    }
+    */
+    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
 }
