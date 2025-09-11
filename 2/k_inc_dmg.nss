@@ -3,6 +3,7 @@
 // Include file for my feats and force powers that use the ondamage event
 
 void UndyingFury();
+void Counterstrike();
 
 void UndyingFury()
 {
@@ -74,4 +75,16 @@ void UndyingFury()
             }
         }
     }
+}
+
+void Counterstrike()
+{
+    //if (GetLevelByClass(CLASS_TYPE_JEDIWEAPONMASTER, OBJECT_SELF) > 0)
+    //{
+    //int nDamage = GetLocalNumber(OBJECT_SELF, 18) + GetTotalDamageDealt();
+    //int nDamage = GetTotalDamageDealt();
+    int nDamage = 25;
+
+    SetLocalNumber(OBJECT_SELF, 18, nDamage);
+    //}
 }

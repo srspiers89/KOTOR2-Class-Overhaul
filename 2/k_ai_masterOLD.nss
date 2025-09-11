@@ -17,6 +17,7 @@
 #include "elite_spawn"
 // #include "levelup"
 #include "diff_balance"
+#include "k_inc_attacked"
 
 void MultiTarget();
 
@@ -321,6 +322,7 @@ void main()
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
                 }
             }
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_ATTACKED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1005));
@@ -603,7 +605,13 @@ void main()
             }
 
             Fury();
-            Resolve();
+            //Resolve();
+
+            //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
+
+            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectConcealment(1), OBJECT_SELF, 3.0);
+
+            //SetLocalNumber(OBJECT_SELF, 18, 0);
 
             /*
             effect eEliteSpawn = EffectAreaOfEffect(3);
@@ -700,6 +708,15 @@ void main()
                     //    GN_DetermineCombatRound();
                 //}
             }
+
+            //SetLocalBoolean(OBJECT_SELF, 123, FALSE);
+
+            //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
+
+            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nAttackBonus), OBJECT_SELF, 3.0);
+
+            //SetLocalNumber(OBJECT_SELF, 18, 0);
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1003));
@@ -799,6 +816,15 @@ void main()
                 SignalEvent(OBJECT_SELF, EventUserDefined(1005));
             }
 
+            // run ondamaged script on pc
+            //int nResult = GetLastAttackResult(oAttacker);
+
+            //if (nResult > 0 && nResult < 4)
+            //if (GetLastAttackResult(oAttacker))
+            //    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nResult), OBJECT_SELF, 3.0);
+
+                //ExecuteScript("k_ai_master", OBJECT_SELF, KOTOR_HENCH_EVENT_ON_DAMAGE);
+
             // Damage the attacker if they are affected by the Empathy force power
             effect eDamage;
 
@@ -879,6 +905,15 @@ void main()
             }
 
             UndyingFury();
+            //Counterstrike();
+
+            //SetLocalNumber(OBJECT_SELF, 18, 25);
+
+            //if (nResult > 0 && nResult < 4)
+
+            //int nDamage = GetTotalDamageDealt();
+
+            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nDamage), OBJECT_SELF, 3.0);
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_DAMAGED))
             {
