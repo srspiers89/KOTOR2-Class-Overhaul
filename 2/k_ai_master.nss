@@ -604,12 +604,30 @@ void main()
                 }
             }
 
-            Fury();
-            //Resolve();
+            //Fury();
+
+            /*
+            int iStillActive = 0;
+            effect eEffect = GetFirstEffect(OBJECT_SELF);
+            while (GetIsEffectValid(eEffect))
+            {
+                if (GetEffectType(eEffect) == EFFECT_TYPE_CONFUSED)
+                {
+                    iStillActive = 1;
+                }
+                eEffect = GetNextEffect(OBJECT_SELF);
+            }
+
+            if (iStillActive == 0)
+                ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectConfused(), OBJECT_SELF);
+            */
+
+            //if (!GetLocalBoolean(OBJECT_SELF, 124))
+            //    Resolve();
 
             //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
 
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectConcealment(1), OBJECT_SELF, 3.0);
+            // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectConcealment(1), OBJECT_SELF, 3.0);
 
             //SetLocalNumber(OBJECT_SELF, 18, 0);
 

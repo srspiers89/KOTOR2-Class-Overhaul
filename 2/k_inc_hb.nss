@@ -93,19 +93,22 @@ float GetBAB(int nClass)
 
 void Resolve()
 {
-    /*
-    int nType;
+
+    int nCheck = 0;
     effect eEffect = GetFirstEffect(OBJECT_SELF);
 
     while (GetIsEffectValid(eEffect))
     {
-        nType = GetEffectType(eEffect);
-
-        if (nType == EFFECT_TYPE_TEMPORARY_HITPOINTS)
-            RemoveEffect(OBJECT_SELF, eEffect);
+        if (GetEffectType(eEffect) == EFFECT_TYPE_TEMPORARY_HITPOINTS)
+            nCheck = 1;
 
         eEffect = GetNextEffect(OBJECT_SELF);
     }
-    */
-    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
+
+    if (nCheck == 0)
+        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
+
+    //SetLocalBoolean(OBJECT_SELF, 124, TRUE);
+
+    DelayCommand(3.05, Resolve());
 }
