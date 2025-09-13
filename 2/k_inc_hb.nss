@@ -106,9 +106,8 @@ void Resolve()
     }
 
     if (nCheck == 0)
+    {
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
-
-    //SetLocalBoolean(OBJECT_SELF, 124, TRUE);
-
-    DelayCommand(3.05, Resolve());
+        DelayCommand(3.05, Resolve());
+    }
 }
