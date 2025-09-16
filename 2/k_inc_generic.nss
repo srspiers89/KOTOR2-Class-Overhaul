@@ -859,6 +859,17 @@ int GN_RunDefaultAIRoutine(object oIntruder)
     tUse = GN_CheckThrowLightSaberUsage(oTarget, tUse);
     tUse = GN_CheckNonDroidForcePower(oTarget, tUse);
 
+    // If taunted attack taunter
+    if (!IsObjectPartyMember(OBJECT_SELF) && GetHasSpellEffect(285))
+    {
+        if (GetHasSpellEffect(285, GetPartyMemberByIndex(0)))
+            oTarget = GetPartyMemberByIndex(0);
+        else if (GetHasSpellEffect(285, GetPartyMemberByIndex(1)))
+            oTarget = GetPartyMemberByIndex(1);
+        else if (GetHasSpellEffect(285, GetPartyMemberByIndex(2)))
+            oTarget = GetPartyMemberByIndex(2);
+    }
+
     GN_MyPrintString("GENERIC DEBUG *************** Default AI Debug End ***************************");
 
     GN_MyPrintString("GENERIC DEBUG *************** Target = " + GN_ReturnDebugName(oTarget) + " is Enemy: " + IntToString(GetIsEnemy(oTarget)));

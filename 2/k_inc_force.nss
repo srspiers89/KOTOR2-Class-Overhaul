@@ -514,6 +514,11 @@ int Sp_MySavingThrows(object oTarget, int iSpellDC = 0)
     {
         nMod = iSpellDC;
     }
+    else if (GetClassByPosition(1, OBJECT_SELF) == CLASS_TYPE_JEDIGUARDIAN ||
+             GetClassByPosition(2, OBJECT_SELF) == CLASS_TYPE_JEDIGUARDIAN)
+    {
+        nMod = 5 + GetHitDice(OBJECT_SELF) + (2 * GetAbilityModifier(ABILITY_CHARISMA, OBJECT_SELF));
+    }
     else
     {
         nMod = Sp_GetJediDCSave();

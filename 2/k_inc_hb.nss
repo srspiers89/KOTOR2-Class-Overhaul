@@ -93,7 +93,7 @@ float GetBAB(int nClass)
 
 void Resolve()
 {
-
+    /*
     int nCheck = 0;
     effect eEffect = GetFirstEffect(OBJECT_SELF);
 
@@ -109,5 +109,9 @@ void Resolve()
     {
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
         DelayCommand(3.05, Resolve());
-    }
+    } */
+
+    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
+    SetLocalBoolean(OBJECT_SELF, 122, TRUE);
+    DelayCommand(3.05, Resolve());
 }

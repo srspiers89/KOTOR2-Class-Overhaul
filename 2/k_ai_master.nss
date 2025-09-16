@@ -622,12 +622,13 @@ void main()
                 ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectConfused(), OBJECT_SELF);
             */
 
-            //if (!GetLocalBoolean(OBJECT_SELF, 124))
+            //if (!GetLocalBoolean(OBJECT_SELF, 122))
             //    Resolve();
 
             //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
 
-            // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectConcealment(1), OBJECT_SELF, 3.0);
+            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectEntangle(), OBJECT_SELF, 3.0);
+            //ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(5), OBJECT_SELF);
 
             //SetLocalNumber(OBJECT_SELF, 18, 0);
 
@@ -924,6 +925,8 @@ void main()
 
             UndyingFury();
             //Counterstrike();
+
+            //ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(), OBJECT_SELF);
 
             //SetLocalNumber(OBJECT_SELF, 18, 25);
 
