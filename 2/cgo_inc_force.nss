@@ -63,7 +63,7 @@ void CGO_RunForcePowers()
         }
         break;
 
-        case 284: // Force Empathy
+        case 900: // Force Empathy 284
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
@@ -124,6 +124,43 @@ void CGO_RunForcePowers()
 
                 oTarget = GetNextObjectInShape(SHAPE_SPHERE, fShapeSize, GetLocation(oTarget), TRUE, OBJECT_TYPE_CREATURE );
             }
+        }
+        break;
+
+        case 901: // Force Ambush -> teleport behind target and attack
+        {
+            location lLoc = Location(GetPosition(oTarget) - AngleToVector(GetFacing(oTarget)) * 2.0, GetFacing(oTarget));
+
+            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectInvisibility(INVISIBILITY_TYPE_NORMAL), OBJECT_SELF, 3.0);
+            //DelayCommand(1.5, ClearAllActions());
+            //DelayCommand(1.6, JumpToLocation(lLoc));
+            ClearAllActions();
+            DelayCommand(0.15, ActionAttack(oTarget));
+            DelayCommand(0.25, JumpToLocation(lLoc));
+            //DelayCommand(1.0, ActionAttack(oTarget));
+
+            // object oAttacker = GetFirstAttacker(OBJECT_SELF);
+
+            //while(GetIsObjectValid(oAttacker))
+            //{
+            //if (oAttacker == oTarget)
+            if (GetAttackTarget(oTarget) == OBJECT_SELF)
+            {
+                AssignCommand(oTarget, ClearAllActions());
+                AssignCommand(oTarget, FaceObjectAwayFromObject(oTarget, OBJECT_SELF));
+                DelayCommand(0.1, AssignCommand(oTarget,ActionPlayAnimation(ANIMATION_LOOPING_PAUSE,1.0,5.0)));
+                DelayCommand(0.2,SetCommandable(FALSE,oTarget));
+                DelayCommand(4.8,SetCommandable(TRUE,oTarget));
+                //break;
+            }
+            //oAttacker = GetNextAttacker(OBJECT_SELF);
+            //}
+        }
+        break;
+
+        case 902: // Force Regroup -> teleport behind furthest party member and heal
+        {
+
         }
         break;
     }

@@ -11,5 +11,5 @@ void main()
 
     //ActionUseFeat(101, oTarget);
 
-    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectRegenerate(10, 6.0), OBJECT_SELF, 60.0);
+    ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceJump(oTarget), OBJECT_SELF);
 }
