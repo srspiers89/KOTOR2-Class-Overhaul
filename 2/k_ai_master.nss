@@ -400,6 +400,8 @@ void main()
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
             }
 
+            OnDamage();
+
             object oDamager = GetLastDamager();
 
             if(GetAttackTarget(oDamager) == OBJECT_SELF && GetWeaponRanged(GetLastWeaponUsed(oDamager)))
@@ -622,8 +624,11 @@ void main()
                 ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectConfused(), OBJECT_SELF);
             */
 
-            //if (!GetLocalBoolean(OBJECT_SELF, 122))
-            //    Resolve();
+            if (!GetLocalBoolean(OBJECT_SELF, 122))
+            {
+                OnHeartbeat();
+                // ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectRegenerate(10, 120.0), OBJECT_SELF);
+            }
 
             //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
 
@@ -923,7 +928,7 @@ void main()
                 }
             }
 
-            UndyingFury();
+            // UndyingFury();
             //Counterstrike();
 
             //ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(), OBJECT_SELF);

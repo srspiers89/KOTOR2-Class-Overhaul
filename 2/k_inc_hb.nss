@@ -2,9 +2,33 @@
 //
 // Include file for my feats and force powers that use the onheartbeat event
 
+#include "k_inc_gensupport"
+
+void OnHeartbeat();
 void Resolve();
 void Fury();
 float GetBAB(int nClass);
+void AgainstTheOdds();
+
+void OnHeartbeat()
+{
+    AgainstTheOdds();
+
+    // Guardian lvl 2 feat CHA to Saves
+    // if (GetHasFeat())
+    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_ALL, GetAbilityModifier(ABILITY_CHARISMA)), OBJECT_SELF, 3.0);
+
+    // Sentinel lvl 1 feat Int to Attack
+    //if (GetHasFeat())
+    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(GetAbilityModifier(ABILITY_INTELLIGENCE)), OBJECT_SELF, 3.0);
+
+    // Sentinel lvl 5 feat Int to Damage
+    // if (GetHasFeat())
+    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(GetAbilityModifier(ABILITY_INTELLIGENCE)), OBJECT_SELF, 3.0);
+
+    SetLocalBoolean(OBJECT_SELF, 122, TRUE);
+    DelayCommand(3.05, OnHeartbeat());
+}
 
 void Fury()
 {
@@ -70,22 +94,22 @@ float GetBAB(int nClass)
     float fBAB;
 
     switch (nClass) {
-        case CLASS_TYPE_SOLDIER:            fBAB = 1.0;
-        case CLASS_TYPE_SCOUT:              fBAB = 0.75;
-        case CLASS_TYPE_SCOUNDREL:          fBAB = 0.75;
-        case CLASS_TYPE_JEDIGUARDIAN:       fBAB = 1.0;
-        case CLASS_TYPE_JEDICONSULAR:       fBAB = 0.5;
-        case CLASS_TYPE_JEDISENTINEL:       fBAB = 0.75;
-        case CLASS_TYPE_COMBATDROID:        fBAB = 1.0;
-        case CLASS_TYPE_EXPERTDROID:        fBAB = 0.75;
-        case CLASS_TYPE_MINION:             fBAB = 1.0;
-        case CLASS_TYPE_TECHSPECIALIST:     fBAB = 0.75;
-        case CLASS_TYPE_JEDIWEAPONMASTER:   fBAB = 1.0;
-        case CLASS_TYPE_JEDIMASTER:         fBAB = 0.5;
-        case CLASS_TYPE_JEDIWATCHMAN:       fBAB = 0.75;
-        case CLASS_TYPE_SITHMARAUDER:       fBAB = 1.0;
-        case CLASS_TYPE_SITHLORD:           fBAB = 0.5;
-        case CLASS_TYPE_SITHASSASSIN:       fBAB = 0.75;
+        case CLASS_TYPE_SOLDIER:            fBAB = 1.0;     break;
+        case CLASS_TYPE_SCOUT:              fBAB = 0.75;    break;
+        case CLASS_TYPE_SCOUNDREL:          fBAB = 0.75;    break;
+        case CLASS_TYPE_JEDIGUARDIAN:       fBAB = 1.0;     break;
+        case CLASS_TYPE_JEDICONSULAR:       fBAB = 0.5;     break;
+        case CLASS_TYPE_JEDISENTINEL:       fBAB = 0.75;    break;
+        case CLASS_TYPE_COMBATDROID:        fBAB = 1.0;     break;
+        case CLASS_TYPE_EXPERTDROID:        fBAB = 0.75;    break;
+        case CLASS_TYPE_MINION:             fBAB = 1.0;     break;
+        case CLASS_TYPE_TECHSPECIALIST:     fBAB = 0.75;    break;
+        case CLASS_TYPE_JEDIWEAPONMASTER:   fBAB = 1.0;     break;
+        case CLASS_TYPE_JEDIMASTER:         fBAB = 0.5;     break;
+        case CLASS_TYPE_JEDIWATCHMAN:       fBAB = 0.75;    break;
+        case CLASS_TYPE_SITHMARAUDER:       fBAB = 1.0;     break;
+        case CLASS_TYPE_SITHLORD:           fBAB = 0.5;     break;
+        case CLASS_TYPE_SITHASSASSIN:       fBAB = 0.75;    break;
     }
 
     return fBAB;
@@ -114,4 +138,28 @@ void Resolve()
     ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectTemporaryHitpoints(20), OBJECT_SELF, 3.0);
     SetLocalBoolean(OBJECT_SELF, 122, TRUE);
     DelayCommand(3.05, Resolve());
+}
+
+void AgainstTheOdds()
+{
+    effect eBonus;
+    int nBonus = 0;
+
+    object oEnemy = GetFirstObjectInShape(SHAPE_SPHERE, 30.0, GetLocation(OBJECT_SELF), TRUE, OBJECT_TYPE_CREATURE );
+
+    if (GetIsInCombat())
+    {
+        while (GetIsObjectValid(oEnemy))
+        {
+            if (GetAttackTarget(oEnemy) == OBJECT_SELF)
+                nBonus++;
+
+            oEnemy = GetNextObjectInShape(SHAPE_SPHERE, 30.0, GetLocation(oEnemy), TRUE, OBJECT_TYPE_CREATURE );
+        }
+    }
+
+    eBonus = EffectACIncrease(nBonus);
+    eBonus = EffectLinkEffects(eBonus, EffectAttackIncrease(nBonus));
+
+    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBonus, OBJECT_SELF, 3.0);
 }
