@@ -11,7 +11,7 @@ void CGO_RunForcePowers()
 
     switch (GetSpellId())
     {
-        case 282: // Force Whirlwind
+        case 282: // Mass Force Whirlwind -> AOE Whirlwind
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_REFLEX;
@@ -63,7 +63,7 @@ void CGO_RunForcePowers()
         }
         break;
 
-        case 900: // Force Empathy 284
+        case 900: // Force Empathy 284 -> enemies take damage when they attack
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
@@ -98,7 +98,7 @@ void CGO_RunForcePowers()
         }
         break;
 
-        case 285: // Force Taunt
+        case 285: // Force Taunt -> force enemies to attack you
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
@@ -158,9 +158,39 @@ void CGO_RunForcePowers()
         }
         break;
 
-        case 902: // Force Regroup -> teleport behind furthest party member and heal
+        case 283: // Force Regroup -> teleport behind furthest party member and heal
         {
+            effect eHeal = EffectHeal(GetMaxHitPoints() / 3);
+            location lLoc;
+            float fDistance = 0.0;
+            object oCreature;
+            int i;
 
+            for (i = 2; i > 0; i--)
+            {
+                oCreature = GetPartyMemberByIndex(i);
+
+                if (GetIsObjectValid(oCreature) && oCreature != OBJECT_SELF)
+                {
+                    if (GetDistanceToObject(oCreature) > fDistance)
+                    {
+                        fDistance = GetDistanceToObject(oCreature);
+                        lLoc = Location(GetPosition(oCreature) - AngleToVector(GetFacing(oCreature)) * 2.0, GetFacing(oCreature));
+                    }
+                }
+            }
+
+            if (fDistance > 0.0)
+            {
+                ClearAllActions();
+                DelayCommand(0.15, JumpToLocation(lLoc));
+                DelayCommand(0.16, SetCameraFacing(GetFacingFromLocation(lLoc)));
+
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, eHeal, OBJECT_SELF);
+                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectInvisibility(INVISIBILITY_TYPE_NORMAL), OBJECT_SELF, 1.0);
+            }
+            else
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
         }
         break;
     }
