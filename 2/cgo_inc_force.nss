@@ -160,7 +160,7 @@ void CGO_RunForcePowers()
 
         case 283: // Force Regroup -> teleport behind furthest party member and heal
         {
-            effect eHeal = EffectHeal(GetMaxHitPoints() / 3);
+            effect eHeal = EffectRegenerate(GetMaxHitPoints() / 3 / 9, 1.0);
             location lLoc;
             float fDistance = 0.0;
             object oCreature;
@@ -186,11 +186,84 @@ void CGO_RunForcePowers()
                 DelayCommand(0.15, JumpToLocation(lLoc));
                 DelayCommand(0.16, SetCameraFacing(GetFacingFromLocation(lLoc)));
 
-                ApplyEffectToObject(DURATION_TYPE_INSTANT, eHeal, OBJECT_SELF);
+                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eHeal, OBJECT_SELF, 9.0);
                 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectInvisibility(INVISIBILITY_TYPE_NORMAL), OBJECT_SELF, 1.0);
             }
             else
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+        }
+        break;
+
+        case FORCE_POWER_FORCE_ENLIGHTENMENT: // Force Buff -> cast all buff powers
+        {
+            SWFP_HARMFUL = FALSE;
+            float fDuration = Sp_CalcDuration(120.0);
+
+            // Remove other versions of power
+            Sp_RemoveRelatedPowers( OBJECT_SELF, FORCE_POWER_FORCE_ENLIGHTENMENT );
+
+            // Armor
+            if (GetSpellAcquired(FORCE_POWER_FORCE_ARMOR))
+            {
+                eLink1 = EffectACIncrease(10, AC_ARMOUR_ENCHANTMENT_BONUS);
+                eLink1 = SetEffectIcon(eLink1, 7);
+                eLink2 = EffectVisualEffect(VFX_PRO_FORCE_ARMOR);
+                eLink2 = EffectLinkEffects(eLink2, EffectVisualEffect(VFX_PRO_FORCE_SHIELD));
+
+                Sp_ApplyEffects(FALSE, OBJECT_SELF, 0.0, 1, eLink1, fDuration, eLink2, 3.0);
+            }
+            else if (GetSpellAcquired(FORCE_POWER_FORCE_SHIELD))
+            {
+                eLink1 = EffectACIncrease(6, AC_ARMOUR_ENCHANTMENT_BONUS);
+                eLink1 = SetEffectIcon(eLink1, 12);
+                eLink2 = EffectVisualEffect(VFX_PRO_FORCE_SHIELD);
+
+                Sp_ApplyEffects(FALSE, OBJECT_SELF, 0.0, 1, eLink1, fDuration, eLink2, 3.0);
+            }
+            else if (GetSpellAcquired(FORCE_POWER_FORCE_AURA))
+            {
+                eLink1 = EffectACIncrease(4, AC_ARMOUR_ENCHANTMENT_BONUS);
+                eLink1 = SetEffectIcon(eLink1, 8);
+                eLink2 = EffectVisualEffect(VFX_PRO_FORCE_AURA);
+
+                Sp_ApplyEffects(FALSE, OBJECT_SELF, 0.0, 1, eLink1, fDuration, eLink2, 3.0);
+            }
+
+            // Valor
+            if (GetSpellAcquired(FORCE_POWER_MIND_MASTERY))
+            {
+                eLink1 = EffectAbilityIncrease(ABILITY_CONSTITUTION, 5);
+                eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_DEXTERITY, 5));
+                eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_STRENGTH, 5));
+                eLink1 = SetEffectIcon(eLink1, 21);
+                eLink2 = EffectVisualEffect(VFX_IMP_MIND_MASTERY);
+
+                Sp_ApplyForcePowerEffects(fDuration, eLink1, OBJECT_SELF);
+                Sp_ApplyForcePowerEffects(0.0, eLink2, OBJECT_SELF);
+            }
+            else if (GetSpellAcquired(FORCE_POWER_KNIGHT_MIND))
+            {
+                eLink1 = EffectAbilityIncrease(ABILITY_CONSTITUTION, 3);
+                eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_DEXTERITY, 3));
+                eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_STRENGTH, 3));
+                eLink1 = SetEffectIcon(eLink1, 19);
+                eLink2 = EffectVisualEffect(1033);
+
+                Sp_ApplyForcePowerEffects(fDuration, eLink1, OBJECT_SELF);
+                Sp_ApplyForcePowerEffects(0.0, eLink2, OBJECT_SELF);
+            }
+            else if (GetSpellAcquired(FORCE_POWER_FORCE_MIND))
+            {
+                eLink1 = EffectAbilityIncrease(ABILITY_CONSTITUTION, 2);
+                eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_DEXTERITY, 2));
+                eLink1 = EffectLinkEffects(eLink1, EffectAbilityIncrease(ABILITY_STRENGTH, 2));
+                eLink1 = SetEffectIcon(eLink1, 10);
+                eLink2 = EffectVisualEffect(VFX_IMP_MIND_FORCE);
+
+                Sp_ApplyForcePowerEffects(fDuration, eLink1, OBJECT_SELF);
+                Sp_ApplyForcePowerEffects(0.0, eLink2, OBJECT_SELF);
+            }
+
         }
         break;
     }

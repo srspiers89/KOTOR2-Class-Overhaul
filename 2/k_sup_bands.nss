@@ -38,8 +38,8 @@ void main()
         nShield = SHIELD_ENERGY;
         nIcon = 45;
 
-        effect eDefense = EffectACIncrease(10);
-        eDefense = VersusRacialTypeEffect(eDefense, RACIAL_TYPE_DROID);
+        effect eDefense = EffectACIncrease(10, AC_ARMOUR_ENCHANTMENT_BONUS);
+        //eDefense = VersusRacialTypeEffect(eDefense, RACIAL_TYPE_DROID);
         //eDefense = VersusAlignmentEffect(eDefense, ALIGNMENT_NEUTRAL, ALIGNMENT_NEUTRAL);
 
         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDefense, oTarget, 200.0);
