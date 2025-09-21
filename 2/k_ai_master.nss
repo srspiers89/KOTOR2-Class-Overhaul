@@ -88,7 +88,7 @@ void main()
             }
             */
 
-            if (!GetPlayerRestrictMode(OBJECT_SELF) && !GetLocalBoolean(OBJECT_SELF, 122))
+            if (!GetPlayerRestrictMode(OBJECT_SELF))
             {
                 Diff_Balance();
             }

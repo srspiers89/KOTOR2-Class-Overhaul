@@ -117,8 +117,8 @@ void CGO_RunForcePowers()
                     nSaves = Sp_MySavingThrows(oTarget);
                     if (nSaves <= 0)
                     {
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectMissChance(1), OBJECT_SELF, 30.0);
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectMissChance(1), oTarget, 30.0);
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSpellImmunity(203), OBJECT_SELF, 30.0);
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSpellImmunity(203), oTarget, 30.0);
                     }
                 }
 

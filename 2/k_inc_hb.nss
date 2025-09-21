@@ -12,7 +12,7 @@ void AgainstTheOdds();
 
 void OnHeartbeat()
 {
-    AgainstTheOdds();
+    //AgainstTheOdds();
 
     // Guardian lvl 2 feat CHA to Saves
     // if (GetHasFeat())
