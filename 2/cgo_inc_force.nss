@@ -266,5 +266,41 @@ void CGO_RunForcePowers()
 
         }
         break;
+
+        case FORCE_POWER_CURE:
+        {
+            SWFP_HARMFUL = FALSE;
+
+            effect eHeal;
+
+            effect eVis =  EffectVisualEffect(VFX_IMP_CURE);
+            int nCnt = 0;
+
+            object oParty;
+            if(IsObjectPartyMember(OBJECT_SELF))
+                oParty = GetPartyMemberByIndex(nCnt);
+            else
+                oParty = OBJECT_SELF;
+
+            while(nCnt < 3)
+            {
+                if(GetIsObjectValid(oParty) &&
+                    GetRacialType(oParty) != RACIAL_TYPE_DROID &&
+                    GetDistanceBetween(OBJECT_SELF, oParty) < 15.0)
+                {
+                    eHeal = EffectRegenerate(GetMaxHitPoints(oParty) * 40 / 100 / 30, 1.0);
+                    SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
+                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eHeal, oParty, 30.0);
+                }
+                nCnt++;
+
+                if(IsObjectPartyMember(OBJECT_SELF))
+                    oParty = GetPartyMemberByIndex(nCnt);
+                else
+                    oParty = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND, OBJECT_SELF, nCnt);
+            }
+        }
+        break;
     }
 }
