@@ -8,14 +8,15 @@ int Save_DC_Calc(object oCreature);
 
 void Diff_Balance()
 {
-    int nCheck;
+    int nCheck = 0;
 
     effect eEffect = GetFirstEffect(OBJECT_SELF);
     while (GetIsEffectValid(eEffect))
     {
         if (GetEffectType(eEffect) == EFFECT_TYPE_CONCEALMENT)
         {
-            nCheck = 1;
+            RemoveEffect(OBJECT_SELF, eEffect);
+            //nCheck = 1;
         }
         eEffect = GetNextEffect(OBJECT_SELF);
     }
@@ -34,6 +35,9 @@ void Diff_Balance()
             SetLocalNumber(OBJECT_SELF, 15, GetReflexSavingThrow(OBJECT_SELF)); // set local number 15 to Original reflex save
             SetLocalNumber(OBJECT_SELF, 16, GetWillSavingThrow(OBJECT_SELF)); // set local number 16 to Original will save
             SetLocalNumber(OBJECT_SELF, 17, ToHitCalc(OBJECT_SELF)); // set local number 17 to Original attack bonus
+
+            // Flag that the creature has been buffed
+            SetLocalBoolean(OBJECT_SELF, 122, TRUE);
         }
 
         oPC1 = GetPartyMemberByIndex(0);
@@ -56,6 +60,7 @@ void Diff_Balance()
         // Find highest attack bonus in party and force power save dc
         if (GetIsObjectValid(oPC1) && !GetIsDead(oPC1))
         {
+            /*
             nHenchBonus = ToHitCalc(oPC1);
 
             if (nHenchBonus > nToHit)
@@ -70,6 +75,7 @@ void Diff_Balance()
 
             if (nHenchBonus > nFP_DC)
                 nFP_DC = nHenchBonus;
+            */
 
             nAvgAC += GetAC(oPC1);
 
@@ -78,7 +84,7 @@ void Diff_Balance()
 
         if (GetIsObjectValid(oPC2) && !GetIsDead(oPC2))
         {
-            nHenchBonus = ToHitCalc(oPC2);
+            /* nHenchBonus = ToHitCalc(oPC2);
 
             if (nHenchBonus > nToHit)
                 nToHit = nHenchBonus;
@@ -91,7 +97,7 @@ void Diff_Balance()
             nHenchBonus = FP_DC_Calc(oPC2);
 
             if (nHenchBonus > nFP_DC)
-                nFP_DC = nHenchBonus;
+                nFP_DC = nHenchBonus; */
 
             nAvgAC += GetAC(oPC2);
 
@@ -100,7 +106,7 @@ void Diff_Balance()
 
         if (GetIsObjectValid(oPC3) && !GetIsDead(oPC3))
         {
-            nHenchBonus = ToHitCalc(oPC3);
+            /* nHenchBonus = ToHitCalc(oPC3);
 
             if (nHenchBonus > nToHit)
                 nToHit = nHenchBonus;
@@ -113,7 +119,7 @@ void Diff_Balance()
             nHenchBonus = FP_DC_Calc(oPC3);
 
             if (nHenchBonus > nFP_DC)
-                nFP_DC = nHenchBonus;
+                nFP_DC = nHenchBonus; */
 
             nAvgAC += GetAC(oPC3);
 
@@ -121,34 +127,46 @@ void Diff_Balance()
         }
 
         nAvgAC /= nPartySize;
-        nAttackBonus = nAvgAC - 6 - GetLocalNumber(OBJECT_SELF, 17); // -6 = 75% chance to hit
+
+        eEffect = EffectMissChance(1);
+
+        int a, b;
+        a = nAvgAC - 6 - GetLocalNumber(OBJECT_SELF, 17); // -6 = 75% chance to hit
+
+        b = 18 - 6 - abs(GetLocalNumber(OBJECT_SELF, 17)); // -6 = 75% chance to hit assuming baseline 18 def
+
+        nAttackBonus = (a < b) ? a : b;
+        //nAttackBonus = 15;
 
         if (nAttackBonus > 0)
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nAttackBonus), OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, EffectAttackIncrease(nAttackBonus));
 
         // to hit + 11 = 50% chance to get hit
-        nDefBonus = (nToHit + 11) - GetLocalNumber(OBJECT_SELF, 13);
+        // nDefBonus = (nToHit + 11) - GetLocalNumber(OBJECT_SELF, 13);
+
+        // player level + 11 = 50% hit chance for high bab chars as baseline
+        nDefBonus = (nPC_Level + 11) - GetLocalNumber(OBJECT_SELF, 13);
 
         if (nDefBonus > 0)
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS), OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, EffectACIncrease(nDefBonus, AC_NATURAL_BONUS));
 
         // Save DC - 11 = 50% chance to succeed
-        // Apply regular save bonus
-        nSaveBonus = nPC_Level; // for non-overhaul vanilla game
+        // We give enemies a 50% save chance against force powers assuming a baseline of +4 to save dcs
+        nSaveDC = nPC_Level + 5 + 4;
 
-        //nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
+        nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 14);
         if (nSaveBonus > 0)
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus), OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus));
 
-        //nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
+        nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 15);
         if (nSaveBonus > 0)
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus), OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, EffectSavingThrowIncrease(SAVING_THROW_REFLEX, nSaveBonus));
 
-        //nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
+        nSaveBonus = nSaveDC - 11 - GetLocalNumber(OBJECT_SELF, 16);
         if (nSaveBonus > 0)
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus), OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus));
 
-        // Apply force power save bonus
+        /* Apply force power save bonus
         nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 14) - (nPC_Level);
         if (nSaveBonus > 0)
             ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_FORT, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
@@ -159,7 +177,7 @@ void Diff_Balance()
 
         nSaveBonus = nFP_DC - 11 - GetLocalNumber(OBJECT_SELF, 16) - (nPC_Level);
         if (nSaveBonus > 0)
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0);
+            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectSavingThrowIncrease(SAVING_THROW_WILL, nSaveBonus, SAVING_THROW_TYPE_FORCE_POWER), OBJECT_SELF, 3.0); */
 
         // # of attacks
 
@@ -171,7 +189,7 @@ void Diff_Balance()
         //else
         nMaxHp = 12 * nLevelDiff;
 
-        if (!GetLocalBoolean(OBJECT_SELF, 122))
+        if (!GetLocalBoolean(OBJECT_SELF, 122) && GetMaxHitPoints() < nMaxHp)
             SetMaxHitPoints(OBJECT_SELF, nMaxHp);
 
         // Bonus damage = to a % of the average hp of party
@@ -247,22 +265,19 @@ void Diff_Balance()
 
         for(i; i > 0; i--)
         {
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(5, DAMAGE_TYPE_UNIVERSAL), OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, EffectDamageIncrease(5, DAMAGE_TYPE_UNIVERSAL));
         }
 
         if (nDamage > 0)
         {
             effect eDamage = EffectDamageIncrease(nDamage % 5, DAMAGE_TYPE_UNIVERSAL);
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDamage, OBJECT_SELF, 3.0);
+            eEffect = EffectLinkEffects(eEffect, eDamage);
         }
 
-        // Flag that the creature has been buffed
-        SetLocalBoolean(OBJECT_SELF, 122, TRUE);
-
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectMissChance(1), OBJECT_SELF, 3.0);
+        DelayCommand(0.0, ApplyEffectToObject(DURATION_TYPE_PERMANENT, eEffect, OBJECT_SELF));
 
         // Loop script
-        DelayCommand(3.05, Diff_Balance());
+        //DelayCommand(3.05, Diff_Balance());
     }
 }
 
@@ -295,7 +310,7 @@ int ToHitCalc(object oCreature)
     nDex = GetAbilityModifier(ABILITY_DEXTERITY, oCreature);
     nStr = GetAbilityModifier(ABILITY_STRENGTH, oCreature);
 
-    if (GetWeaponRanged(oWeapon) && nDex > 0) // ranged weapon add dex
+    if (GetWeaponRanged(oWeapon)) // && nDex > 0) // ranged weapon add dex
         nToHit += nDex;
     else if (GetFeatAcquired(FEAT_FINESSE_MELEE_WEAPONS, oCreature) || // if finesse add greater of str and dex
              GetFeatAcquired(FEAT_FINESSE_LIGHTSABERS, oCreature))

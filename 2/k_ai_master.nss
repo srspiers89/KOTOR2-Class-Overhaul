@@ -12,14 +12,7 @@
 #include "k_inc_switch"
 #include "k_inc_utility"
 
-#include "k_inc_hb"
-#include "k_inc_dmg"
-#include "elite_spawn"
-// #include "levelup"
 #include "diff_balance"
-#include "k_inc_attacked"
-
-void MultiTarget();
 
 void main()
 {
@@ -80,18 +73,10 @@ void main()
                 }
             }
 
-            /*
-            if (!GetLocalBoolean(OBJECT_SELF, 120) && GetStandardFaction(OBJECT_SELF) == STANDARD_FACTION_HOSTILE_1)
-            {
-                SpawnElite();
-                SetLocalBoolean(OBJECT_SELF, 120, TRUE);
-            }
-            */
-
-            if (!GetPlayerRestrictMode(OBJECT_SELF))
-            {
-                Diff_Balance();
-            }
+            //if (!GetPlayerRestrictMode(OBJECT_SELF))
+            //{
+            //    Diff_Balance();
+            //}
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
@@ -133,6 +118,7 @@ void main()
                             {
                                GN_SetSpawnInCondition(SW_FLAG_STATE_AGITATED);
                             }
+                            Diff_Balance();
                         }
                     }
                 }
@@ -155,6 +141,7 @@ void main()
                            ActionAttack(oPerceived);
                        }
                     }
+                    Diff_Balance();
                 }
                 else if( GetCurrentAction() != ACTION_QUEUEEMPTY )
                 {
@@ -170,16 +157,12 @@ void main()
                             SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
                             GN_MyPrintString("GENERIC DEBUG *************** Determine Combat Round from On Perception 2");
                             DelayCommand(fDelay, GN_DetermineCombatRound());
+
+                            Diff_Balance();
                         }
                     }
                 }
             }
-
-            //if (!GetPlayerRestrictMode(OBJECT_SELF) && !GetLocalBoolean(OBJECT_SELF, 122))
-            //{
-            //    LevelUp();
-            //}
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_PERCEPTION) && GetLastPerceptionSeen())
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1002));
@@ -201,17 +184,12 @@ void main()
                     GN_DetermineCombatRound();
                 }
             }
-
-            if (!GetLocalBoolean(OBJECT_SELF, 120) && GetStandardFaction(OBJECT_SELF) == STANDARD_FACTION_HOSTILE_1)
-            {
-                SpawnElite();
-                SetLocalBoolean(OBJECT_SELF, 120, TRUE);
-            }
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1003));
             }
+
+            Diff_Balance();
         }
         break;
         case 1004: //KOTOR_DEFAULT_EVENT_ON_DIALOGUE
@@ -322,11 +300,12 @@ void main()
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
                 }
             }
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_ATTACKED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1005));
             }
+
+            Diff_Balance();
         }
         break;
         case 1006: //KOTOR_DEFAULT_EVENT_ON_DAMAGE
@@ -394,18 +373,10 @@ void main()
                     }
                 }
             }
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_DAMAGED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
             }
-
-            OnDamage();
-
-            object oDamager = GetLastDamager();
-
-            if(GetAttackTarget(oDamager) == OBJECT_SELF && GetWeaponRanged(GetLastWeaponUsed(oDamager)))
-                MultiTarget();
         }
         break;
         case 1007: //KOTOR_DEFAULT_EVENT_ON_DEATH
@@ -420,11 +391,6 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1007));
             }
-
-            object oDamager = GetLastDamager();
-
-            if(GetAttackTarget(oDamager) == OBJECT_SELF && GetWeaponRanged(GetLastWeaponUsed(oDamager)))
-                MultiTarget();
         }
         break;
         case 1008: //KOTOR_DEFAULT_EVENT_ON_DISTURBED
@@ -482,6 +448,8 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1010));
             }
+
+            //Diff_Balance();
         }
         break;
         case 1011: //KOTOR_DEFAULT_EVENT_ON_GLOBAL_DIALOGUE_END
@@ -523,6 +491,8 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1011));
             }
+
+            //Diff_Balance();
         }
         break;
         case 1012: //KOTOR_DEFAULT_EVENT_ON_PATH_BLOCKED
@@ -575,7 +545,7 @@ void main()
             object oEnemy = GetNearestCreature(CREATURE_TYPE_PERCEPTION, PERCEPTION_SEEN, OBJECT_SELF, 1, CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
             //GN_SetSpawnInCondition(SW_FLAG_SHOUTED_AT, FALSE);
 
-            if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF)) // && !GetSoloMode())
+            if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF) && !GetSoloMode())
             {
                 if(GetPartyMemberByIndex(0) != OBJECT_SELF)
                 {
@@ -605,47 +575,10 @@ void main()
                     }
                 }
             }
-
-            //Fury();
-
-            /*
-            int iStillActive = 0;
-            effect eEffect = GetFirstEffect(OBJECT_SELF);
-            while (GetIsEffectValid(eEffect))
+            else if(GetSoloMode() && GetCurrentAction(OBJECT_SELF) == ACTION_FOLLOWLEADER)
             {
-                if (GetEffectType(eEffect) == EFFECT_TYPE_CONFUSED)
-                {
-                    iStillActive = 1;
-                }
-                eEffect = GetNextEffect(OBJECT_SELF);
+                ClearAllActions();
             }
-
-            if (iStillActive == 0)
-                ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectConfused(), OBJECT_SELF);
-            */
-
-            if (!GetLocalBoolean(OBJECT_SELF, 122))
-            {
-                OnHeartbeat();
-                // ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectRegenerate(10, 120.0), OBJECT_SELF);
-            }
-
-            //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
-
-            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectEntangle(), OBJECT_SELF, 3.0);
-            //ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(5), OBJECT_SELF);
-
-            //SetLocalNumber(OBJECT_SELF, 18, 0);
-
-            /*
-            effect eEliteSpawn = EffectAreaOfEffect(3);
-
-            if (!GetIsObjectValid(GetObjectByTag("VFX_ELITE_SPAWN")) && GetPartyMemberByIndex(0) == OBJECT_SELF)
-            {
-                ApplyEffectToObject(DURATION_TYPE_PERMANENT, eEliteSpawn, OBJECT_SELF);
-            }
-            */
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
@@ -673,10 +606,7 @@ void main()
                            GetAttackTarget() == GetLastPerceived()) && GetArea(GetLastPerceived()) != GetArea(OBJECT_SELF))
                         {
                            ClearAllActions();
-                           //if(!GetSoloMode())
-                           //    SetSoloMode(1);
-                           //if( !IsObjectPartyMember(OBJECT_SELF) )
-                           //    GN_DetermineCombatRound();
+                           GN_DetermineCombatRound();
                         }
                     }
                     //Do not bother checking the last target seen if already fighting
@@ -695,10 +625,7 @@ void main()
                                     //SetFacingPoint(GetPosition(GetLastPerceived()));
                                     //SpeakString("GEN_COMBAT_ACTIVE", TALKVOLUME_SILENT_TALK);
                                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_SHOUT);
-                                    //if(!GetSoloMode())
-                                    //    SetSoloMode(1);
-                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
-                                    //    GN_DetermineCombatRound();
+                                    GN_DetermineCombatRound();
                                 }
                             }
                         }
@@ -724,23 +651,9 @@ void main()
                 //{
                     Db_MyPrintString("GENERIC DEBUG *************** End of Combat Round: " + GN_ReturnDebugName(OBJECT_SELF));
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
-                    //if(GetIsInCombat() && !GetSoloMode())
-                    //    SetSoloMode(1);
-                    //else if(!GetIsInCombat(GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF)) && GetSoloMode())
-                    //    SetSoloMode(0);
-                    //if( !IsObjectPartyMember(OBJECT_SELF) )
-                    //    GN_DetermineCombatRound();
+                    GN_DetermineCombatRound();
                 //}
             }
-
-            //SetLocalBoolean(OBJECT_SELF, 123, FALSE);
-
-            //int nAttackBonus = GetLocalNumber(OBJECT_SELF, 18);
-
-            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nAttackBonus), OBJECT_SELF, 3.0);
-
-            //SetLocalNumber(OBJECT_SELF, 18, 0);
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_COMBAT_ROUND_END))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1003));
@@ -821,9 +734,7 @@ void main()
                             {
                                 if(!GetIsInCombat())
                                 {
-                                    //SetSoloMode(1);
-                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
-                                    //    GN_DetermineCombatRound();
+                                    GN_DetermineCombatRound();
                                 }
                             }
                         }
@@ -839,37 +750,10 @@ void main()
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1005));
             }
-
-            // run ondamaged script on pc
-            //int nResult = GetLastAttackResult(oAttacker);
-
-            //if (nResult > 0 && nResult < 4)
-            //if (GetLastAttackResult(oAttacker))
-            //    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nResult), OBJECT_SELF, 3.0);
-
-                //ExecuteScript("k_ai_master", OBJECT_SELF, KOTOR_HENCH_EVENT_ON_DAMAGE);
-
-            // Damage the attacker if they are affected by the Empathy force power
-            effect eDamage;
-
-            if (GetHasSpellEffect(284, oAttacker))
-            {
-                eDamage = EffectDamage(d8(GetHitDice(OBJECT_SELF)), DAMAGE_TYPE_LIGHT_SIDE);
-                ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oAttacker);
-            }
-
         }
         break;
         case 2006: //KOTOR_HENCH_EVENT_ON_DAMAGE
         {
-            /*
-            if(GN_GetIsFighting(GetLastDamager()))
-            {
-                if(!GetSoloMode())
-                    SetSoloMode(1);
-            }
-            */
-
             if(!GN_GetSpawnInCondition(SW_FLAG_AI_OFF))
             {
                 if(GetFirstPC() == OBJECT_SELF &&
@@ -891,18 +775,14 @@ void main()
                             {
                                 if(!GetIsObjectValid(GetAttemptedAttackTarget()) && !GetIsObjectValid(GetAttemptedSpellTarget()) && !GetIsObjectValid(GetAttackTarget()) )
                                 {
-                                    //if( !IsObjectPartyMember(OBJECT_SELF) )
-                                    //   GN_DetermineCombatRound();
+                                    GN_DetermineCombatRound();
                                     if(!GN_GetIsFighting(OBJECT_SELF))
                                     {
                                         object oTarget = GetLastDamager();
                                         if(!GetObjectSeen(oTarget) && GetArea(OBJECT_SELF) == GetArea(oTarget))
                                         {
-                                            //if( !IsObjectPartyMember(OBJECT_SELF) )
-                                            //{
-                                            //     ActionMoveToLocation(GetLocation(oTarget), TRUE);
-                                            //     ActionDoCommand(GN_DetermineCombatRound());
-                                            //}
+                                            ActionMoveToLocation(GetLocation(oTarget), TRUE);
+                                            ActionDoCommand(GN_DetermineCombatRound());
                                         }
                                     }
                                 }
@@ -920,27 +800,12 @@ void main()
                                (GetTotalDamageDealt() > (GetMaxHitPoints(OBJECT_SELF) / 4) ||
                                 (GetHitDice(oAttacker) - 2) > GetHitDice(oTarget) ) )
                             {
-                                //if( !IsObjectPartyMember(OBJECT_SELF) )
-                                //    GN_DetermineCombatRound(oAttacker);
+                                GN_DetermineCombatRound(oAttacker);
                             }
                         }
                     }
                 }
             }
-
-            // UndyingFury();
-            //Counterstrike();
-
-            //ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(), OBJECT_SELF);
-
-            //SetLocalNumber(OBJECT_SELF, 18, 25);
-
-            //if (nResult > 0 && nResult < 4)
-
-            //int nDamage = GetTotalDamageDealt();
-
-            //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectAttackIncrease(nDamage), OBJECT_SELF, 3.0);
-
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_DAMAGED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
@@ -1038,60 +903,4 @@ void main()
         }
         break;
     }
-}
-
-void MultiTarget()
-{
-    object oDamager = GetLastDamager();
-
-    int nDamage = GetTotalDamageDealt() / 4;
-    if(nDamage < 1)
-        nDamage = 1;
-
-    // Get damage type of base Item
-    int oWeapon = GetBaseItemType(GetLastWeaponUsed(oDamager));
-    int nDamageType;
-
-    if(oWeapon == BASE_ITEM_BLASTER_PISTOL ||
-       oWeapon == BASE_ITEM_HEAVY_BLASTER ||
-       oWeapon == BASE_ITEM_HOLD_OUT_BLASTER ||
-       oWeapon == BASE_ITEM_BOWCASTER ||
-       oWeapon == BASE_ITEM_BLASTER_CARBINE ||
-       oWeapon == BASE_ITEM_REPEATING_BLASTER ||
-       oWeapon == BASE_ITEM_HEAVY_REPEATING_BLASTER ||
-       oWeapon == BASE_ITEM_BLASTER_RIFLE
-    )
-        nDamageType = 4096;
-
-    else if(oWeapon == BASE_ITEM_ION_BLASTER ||
-            oWeapon == BASE_ITEM_ION_RIFLE
-    )
-        nDamageType = 2048;
-
-    else if(oWeapon == BASE_ITEM_DISRUPTER_PISTOL ||
-            oWeapon == BASE_ITEM_DISRUPTER_RIFLE
-    )
-        nDamageType = 8;
-
-    else if(oWeapon == BASE_ITEM_SONIC_PISTOL ||
-            oWeapon == BASE_ITEM_SONIC_RIFLE
-    )
-        nDamageType = 1024;
-
-    // Get the target of the richochet
-    object oTarget = GetFirstObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(OBJECT_SELF), FALSE, OBJECT_TYPE_CREATURE);
-
-    while(GetIsObjectValid(oTarget))
-    {
-        if(GetIsEnemy(oTarget, oDamager) && oTarget != GetAttackTarget(oDamager) && oTarget != GetLastHostileTarget(oDamager)) // Only richochet once
-        {
-            AssignCommand(oDamager, ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(nDamage, nDamageType), oTarget));
-            break;
-        }
-        else
-            oTarget = GetNextObjectInShape(SHAPE_SPHERE, 10.0, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE);
-    }
-
-    //if(GetAttackTarget(oDamager) == OBJECT_SELF)
-    //    ExecuteScript("multitarget", oDamager);
 }
