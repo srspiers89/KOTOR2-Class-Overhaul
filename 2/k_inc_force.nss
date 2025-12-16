@@ -10,7 +10,7 @@ float fLightningDuration = 1.0;
 
 //These variables are set in the script run area.
 int SWFP_PRIVATE_SAVE_TYPE;
-int SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FORCE_POWER;
+int SWFP_PRIVATE_SAVE_VERSUS_TYPE;
 int SWFP_DAMAGE;
 int SWFP_DAMAGE_TYPE;
 int SWFP_DAMAGE_VFX;
@@ -514,11 +514,6 @@ int Sp_MySavingThrows(object oTarget, int iSpellDC = 0)
     {
         nMod = iSpellDC;
     }
-    else if (GetClassByPosition(1, OBJECT_SELF) == CLASS_TYPE_JEDIGUARDIAN ||
-             GetClassByPosition(2, OBJECT_SELF) == CLASS_TYPE_JEDIGUARDIAN)
-    {
-        nMod = 5 + GetHitDice(OBJECT_SELF) + (2 * GetAbilityModifier(ABILITY_CHARISMA, OBJECT_SELF));
-    }
     else
     {
         nMod = Sp_GetJediDCSave();
@@ -963,7 +958,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_DARK_SIDE;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_DARK_SIDE;
             int nDamTest = GetHitDice(OBJECT_SELF);
             if(nDamTest > 10)
             {
@@ -1132,7 +1127,7 @@ void  Sp_RunForcePowers()
             SWFP_HARMFUL = TRUE;
             //SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_REFLEX;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;//RWT-OEI 09/27/04
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
 
             float fRange = Sp_CalcRange( 6.0 );
 
@@ -1331,7 +1326,7 @@ void  Sp_RunForcePowers()
             SWFP_HARMFUL = TRUE;
             //SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_REFLEX;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;//RWT-OEI 09/27/04
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
 
             float fRange = Sp_CalcRange( 5.0 );
 
@@ -1518,7 +1513,7 @@ void  Sp_RunForcePowers()
             {//Otherwise target is a droid, so handle the existing way.
                 SWFP_HARMFUL = TRUE;
                 SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-                // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+                SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
 
                 // DJS-OEI 3/25/2004
                 SWFP_DAMAGE = Sp_CalcDamage( oTarget, 0, 0, GetHitDice(OBJECT_SELF) );
@@ -1569,7 +1564,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
 
             eLink1 = EffectHorrified();
             eLink1 = EffectLinkEffects(eLink1, EffectVisualEffect(1041));
@@ -2426,7 +2421,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
 
             float fRange = Sp_CalcRange( 5.0 );
 
@@ -2446,7 +2441,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_FEAR;
 
             float fRange = Sp_CalcRange( 10.0 );
 
@@ -2683,7 +2678,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
             int nDice = GetHitDice(OBJECT_SELF);
             // DJS-OEI 10/7/2004
             // Removed cap.
@@ -3142,7 +3137,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
             int nDice = GetHitDice(OBJECT_SELF);
             // DJS-OEI 10/7/2004
             // Removed cap.
@@ -3453,7 +3448,7 @@ void  Sp_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_MIND_AFFECTING;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_MIND_AFFECTING;
 
             eLink1 = EffectStunned();
             //eLink1 = EffectLinkEffects(eLink1, EffectVisualEffect(VFX_DUR_HOLD));
@@ -4711,7 +4706,7 @@ void  Sp_RunForcePowers()
             // targets in a cone extending from the caster's location.
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
-            // SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_SONIC;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_SONIC;
 
             // Each version of the spell causes differing amounts of damage.
             int nDamageRolls;
@@ -6723,6 +6718,24 @@ void Sp_RemoveRelatedPowers( object oTarget, int nPowerID )
             nRelatedPowerID1 = FORCE_POWER_BREATH_CONTROL;
             break;
 
+        case FORCE_POWER_CURE:
+            // Remove all other Cure instances
+            nRelatedPowerID1 = FORCE_POWER_CURE;
+            break;
+
+        case FORCE_POWER_HEAL:
+            // Remove all other Cure and Heal instances
+            nRelatedPowerID1 = FORCE_POWER_CURE;
+            nRelatedPowerID2 = FORCE_POWER_HEAL;
+            break;
+
+        case FORCE_POWER_MASTER_HEAL:
+            // Remove all other Cure, Heal, and Master Heal instances
+            nRelatedPowerID1 = FORCE_POWER_CURE;
+            nRelatedPowerID2 = FORCE_POWER_HEAL;
+            nRelatedPowerID3 = FORCE_POWER_MASTER_HEAL;
+            break;
+
         case 131:
             // Remove all other Sonic Howl instances.
             nRelatedPowerID1 = 131;
@@ -7051,6 +7064,15 @@ int Sp_BetterRelatedPowerExists( object oTarget, int nPowerID )
             nRelatedPowerID1 = FORCE_POWER_DROID_CONFUSION;
             break;
 
+        case FORCE_POWER_CURE:
+            // Heal and Master Heal are better
+            nRelatedPowerID1 = FORCE_POWER_HEAL;
+            nRelatedPowerID2 = FORCE_POWER_MASTER_HEAL;
+
+        case FORCE_POWER_HEAL:
+            // Master Heal is better
+            nRelatedPowerID1 = FORCE_POWER_MASTER_HEAL;
+
         case FORCE_POWER_PLAGUE:
         case FORCE_POWER_FORCE_ARMOR:
         case FORCE_POWER_FORCE_IMMUNITY:
@@ -7074,6 +7096,7 @@ int Sp_BetterRelatedPowerExists( object oTarget, int nPowerID )
         case FORCE_POWER_BEAST_CONFUSION:
         case FORCE_POWER_DROID_CONFUSION:
         case FORCE_POWER_BREATH_CONTROL:
+        case FORCE_POWER_MASTER_HEAL:
         case 131: // DJS-OEI 10/23/2004 Sonic Howl
         default:
             // There is either no Force Power within the same
