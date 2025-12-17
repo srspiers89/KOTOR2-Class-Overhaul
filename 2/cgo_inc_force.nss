@@ -269,82 +269,88 @@ void CGO_RunForcePowers()
 
         case FORCE_POWER_CURE:
         {
-            Sp_RemoveRelatedPowers(oTarget, FORCE_POWER_CURE);
+            SWFP_HARMFUL = FALSE;
 
-            if (!Sp_BetterRelatedPowerExists( oTarget, FORCE_POWER_CURE))
+            int nMultiplier = 1;
+            int nHeal = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
+
+            effect eVis =  EffectVisualEffect(VFX_IMP_CURE);
+            int nCnt = 0;
+
+            object oParty;
+            if(IsObjectPartyMember(OBJECT_SELF))
+                oParty = GetPartyMemberByIndex(nCnt);
+            else
+                oParty = OBJECT_SELF;
+
+            while(nCnt < 3)
             {
-                SWFP_HARMFUL = FALSE;
+                if(GetIsObjectValid(oParty) &&
+                    GetRacialType(oParty) != RACIAL_TYPE_DROID &&
+                    GetDistanceBetween(OBJECT_SELF, oParty) < 15.0)
+                {
+                    Sp_RemoveRelatedPowers(oParty, FORCE_POWER_CURE);
 
-                effect eHeal;
+                    if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_CURE))
+                    {
+                        eLink1 = EffectRegenerate(nHeal, 3.0);
+                        eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
+                        eLink1 = SetEffectIcon(eLink1, 117);
+                        SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oParty, 30.0);
+                    }
+                }
+                nCnt++;
 
-                effect eVis =  EffectVisualEffect(VFX_IMP_CURE);
-                int nCnt = 0;
-
-                object oParty;
                 if(IsObjectPartyMember(OBJECT_SELF))
                     oParty = GetPartyMemberByIndex(nCnt);
                 else
-                    oParty = OBJECT_SELF;
-
-                while(nCnt < 3)
-                {
-                    if(GetIsObjectValid(oParty) &&
-                        GetRacialType(oParty) != RACIAL_TYPE_DROID &&
-                        GetDistanceBetween(OBJECT_SELF, oParty) < 15.0)
-                    {
-                        eHeal = EffectRegenerate(GetMaxHitPoints(oParty) * 40 / 100 / 30, 1.0);
-                        SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
-                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eHeal, oParty, 30.0);
-                    }
-                    nCnt++;
-
-                    if(IsObjectPartyMember(OBJECT_SELF))
-                        oParty = GetPartyMemberByIndex(nCnt);
-                    else
-                        oParty = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND, OBJECT_SELF, nCnt);
-                }
+                    oParty = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND, OBJECT_SELF, nCnt);
             }
         }
         break;
 
         case FORCE_POWER_HEAL:
         {
-            Sp_RemoveRelatedPowers(oTarget, FORCE_POWER_HEAL);
+            SWFP_HARMFUL = FALSE;
 
-            if (!Sp_BetterRelatedPowerExists( oTarget, FORCE_POWER_HEAL))
+            int nMultiplier = 2;
+            int nHeal = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
+
+            effect eVis =  EffectVisualEffect(VFX_IMP_HEAL);
+            int nCnt = 0;
+
+            object oParty;
+            if(IsObjectPartyMember(OBJECT_SELF))
+                oParty = GetPartyMemberByIndex(nCnt);
+            else
+                oParty = OBJECT_SELF;
+
+            while(nCnt < 3)
             {
-                SWFP_HARMFUL = FALSE;
+                if(GetIsObjectValid(oParty) &&
+                    GetRacialType(oParty) != RACIAL_TYPE_DROID &&
+                    GetDistanceBetween(OBJECT_SELF, oParty) < 15.0)
+                {
+                    Sp_RemoveRelatedPowers(oParty, FORCE_POWER_HEAL);
 
-                effect eHeal;
+                    if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_HEAL))
+                    {
+                        eLink1 = EffectRegenerate(nHeal, 3.0);
+                        eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
+                        eLink1 = SetEffectIcon(eLink1, 118);
+                        SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oParty, 30.0);
+                    }
+                }
+                nCnt++;
 
-                effect eVis =  EffectVisualEffect(VFX_IMP_HEAL);
-                int nCnt = 0;
-
-                object oParty;
                 if(IsObjectPartyMember(OBJECT_SELF))
                     oParty = GetPartyMemberByIndex(nCnt);
                 else
-                    oParty = OBJECT_SELF;
-
-                while(nCnt < 3)
-                {
-                    if(GetIsObjectValid(oParty) &&
-                        GetRacialType(oParty) != RACIAL_TYPE_DROID &&
-                        GetDistanceBetween(OBJECT_SELF, oParty) < 15.0)
-                    {
-                        eHeal = EffectRegenerate(GetMaxHitPoints(oParty) * 60 / 100 / 30, 1.0);
-                        SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
-                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eHeal, oParty, 30.0);
-                    }
-                    nCnt++;
-
-                    if(IsObjectPartyMember(OBJECT_SELF))
-                        oParty = GetPartyMemberByIndex(nCnt);
-                    else
-                        oParty = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND, OBJECT_SELF, nCnt);
-                }
+                    oParty = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND, OBJECT_SELF, nCnt);
             }
         }
         break;
@@ -353,7 +359,8 @@ void CGO_RunForcePowers()
         {
             SWFP_HARMFUL = FALSE;
 
-            effect eHeal;
+            int nMultiplier = 3;
+            int nHeal = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
 
             effect eVis =  EffectVisualEffect(VFX_IMP_HEAL);
             int nCnt = 0;
@@ -375,7 +382,7 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_MASTER_HEAL))
                     {
-                        eLink1 = EffectRegenerate(GetMaxHitPoints(oParty) * 80 / 100 / 30, 1.0);
+                        eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 119);
                         SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
