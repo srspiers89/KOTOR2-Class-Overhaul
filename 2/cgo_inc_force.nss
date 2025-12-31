@@ -555,29 +555,24 @@ void CGO_RunForcePowers()
             SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
             if(nResist == 0)
             {
-                // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration);
-                //DelayCommand(0.0, ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration));
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_PRO_LIGHTNING_S), oTarget);
                 if(nSaves == 0)
                 {
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
 
                     // Remove any lower level or equal versions of this power.
-                    //Sp_RemoveRelatedPowers(oTarget, GetSpellId());
-                    //RemoveEffectByExactMatch(oTarget, eLink2);
+                    Sp_RemoveRelatedPowers(oTarget, GetSpellId());
 
-                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration);
-
-                    //if(!Sp_BetterRelatedPowerExists( oTarget, GetSpellId()))
-                    //{
+                    if(!Sp_BetterRelatedPowerExists( oTarget, GetSpellId()))
+                    {
                         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink2, oTarget, 30.0); // Apply Shocked Debuff on failed save
                         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(VFX_BEAM_LIGHTNING_DARK_S, oTarget, BODY_NODE_CHEST), oTarget, 30.0);
-                    //}
+                    }
                 }
                 else
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage2, oTarget);
 
-
+                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration);
             }
         }
         break;
@@ -633,8 +628,15 @@ void CGO_RunForcePowers()
                         if(nSaves == 0)
                         {
                             ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
-                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
-                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(2061, oUse, BODY_NODE_CHEST), oUse, 30.0); // visual effect for shocked debuff
+
+                            // Remove any lower level or equal versions of this power.
+                            Sp_RemoveRelatedPowers(oUse, GetSpellId());
+
+                            if(!Sp_BetterRelatedPowerExists(oUse, GetSpellId()))
+                            {
+                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
+                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(VFX_BEAM_LIGHTNING_DARK_S, oUse, BODY_NODE_CHEST), oUse, 30.0); // visual effect for shocked debuff
+                            }
                         }
                         else
                         {
@@ -699,7 +701,6 @@ void CGO_RunForcePowers()
                     if(nResist == 0)
                     {
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oUse);
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBeam, oUse, fLightningDuration);
 
                         nSaves = Sp_MySavingThrows(oUse);
                         if(nSaves == 0)
@@ -708,8 +709,15 @@ void CGO_RunForcePowers()
                             eForce = EffectDamageForcePoints(SWFP_DAMAGE);
                             ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
                             ApplyEffectToObject(DURATION_TYPE_INSTANT, eForce, oUse);
-                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
-                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(2061, oUse, BODY_NODE_CHEST), oUse, 30.0); // Apply visual effect for shocked debuff
+
+                            // Remove any lower level or equal versions of this power.
+                            Sp_RemoveRelatedPowers(oUse, GetSpellId());
+
+                            if(!Sp_BetterRelatedPowerExists(oUse, GetSpellId()))
+                            {
+                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
+                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(VFX_BEAM_LIGHTNING_DARK_S, oUse, BODY_NODE_CHEST), oUse, 30.0); // Apply visual effect for shocked debuff
+                            }
                         }
                         else
                         {
@@ -718,11 +726,48 @@ void CGO_RunForcePowers()
                             ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
                             ApplyEffectToObject(DURATION_TYPE_INSTANT, eForce, oUse);
                         }
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBeam, oUse, fLightningDuration);
                     }
                     else
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
                 }
                 oUse = GetNextObjectInShape(SHAPE_SPHERE, fRange, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE );
+            }
+        }
+        break;
+
+        case FORCE_POWER_WOUND:
+        {
+            SWFP_HARMFUL = TRUE;
+            SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
+
+            // DJS-OEI 3/25/2004
+            SWFP_DAMAGE = Sp_CalcDamage( oTarget, 0, 0, (GetHitDice(OBJECT_SELF)*2)/3 );
+            //SWFP_DAMAGE = (GetHitDice(OBJECT_SELF)*2)/3;
+            SWFP_DAMAGE_TYPE = DAMAGE_TYPE_BLUDGEONING;
+
+            effect eChoke = EffectChoke();
+            eChoke = SetEffectIcon(eChoke, 31);
+            effect eDamage = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
+
+            int nResist = Sp_BlockingChecks(oTarget, eChoke, eDamage, eInvalid);
+            int nSaves;
+            SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
+            if(nResist == 0)
+            {
+                nSaves = Sp_MySavingThrows(oTarget);
+                if(nSaves == 0)
+                {
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_IMP_CHOKE), oTarget);
+                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eChoke, oTarget, 1.0);
+                    int nIdx = 1;
+                    float fDelay;
+                    SP_InterativeDamage(eDamage, 7, oTarget);
+                }
+            }
+            if(nResist > 0 || nSaves > 0)
+            {
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
             }
         }
         break;
