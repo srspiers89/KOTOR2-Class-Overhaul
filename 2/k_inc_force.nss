@@ -6736,6 +6736,21 @@ void Sp_RemoveRelatedPowers( object oTarget, int nPowerID )
             nRelatedPowerID3 = FORCE_POWER_MASTER_HEAL;
             break;
 
+        case FORCE_POWER_SHOCK:
+            nRelatedPowerID1 = FORCE_POWER_SHOCK;
+            break;
+
+        case FORCE_POWER_LIGHTNING:
+            nRelatedPowerID1 = FORCE_POWER_SHOCK;
+            nRelatedPowerID2 = FORCE_POWER_LIGHTNING;
+            break;
+
+        case FORCE_POWER_FORCE_STORM:
+            nRelatedPowerID1 = FORCE_POWER_SHOCK;
+            nRelatedPowerID2 = FORCE_POWER_LIGHTNING;
+            nRelatedPowerID3 = FORCE_POWER_FORCE_STORM;
+            break;
+
         case 131:
             // Remove all other Sonic Howl instances.
             nRelatedPowerID1 = 131;
@@ -7073,6 +7088,15 @@ int Sp_BetterRelatedPowerExists( object oTarget, int nPowerID )
             // Master Heal is better
             nRelatedPowerID1 = FORCE_POWER_MASTER_HEAL;
 
+        case FORCE_POWER_SHOCK:
+            // Lightning and Storm are better
+            nRelatedPowerID1 = FORCE_POWER_LIGHTNING;
+            nRelatedPowerID2 = FORCE_POWER_FORCE_STORM;
+
+        case FORCE_POWER_LIGHTNING:
+            // Storm is better
+            nRelatedPowerID1 = FORCE_POWER_FORCE_STORM;
+
         case FORCE_POWER_PLAGUE:
         case FORCE_POWER_FORCE_ARMOR:
         case FORCE_POWER_FORCE_IMMUNITY:
@@ -7097,6 +7121,7 @@ int Sp_BetterRelatedPowerExists( object oTarget, int nPowerID )
         case FORCE_POWER_DROID_CONFUSION:
         case FORCE_POWER_BREATH_CONTROL:
         case FORCE_POWER_MASTER_HEAL:
+        case FORCE_POWER_FORCE_STORM:
         case 131: // DJS-OEI 10/23/2004 Sonic Howl
         default:
             // There is either no Force Power within the same

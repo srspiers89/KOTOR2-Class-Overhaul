@@ -3,6 +3,8 @@
 
 void CGO_RunForcePowers();
 
+// int CGO_CalcDamage(); // Calculates damage for force powers
+
 void CGO_RunForcePowers()
 {
     object oTarget = GetSpellTargetObject();
@@ -396,6 +398,331 @@ void CGO_RunForcePowers()
                     oParty = GetPartyMemberByIndex(nCnt);
                 else
                     oParty = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND, OBJECT_SELF, nCnt);
+            }
+        }
+        break;
+
+        case FORCE_POWER_FORCE_SCREAM:
+        case FORCE_POWER_IMPROVED_FORCE_SCREAM:
+        case FORCE_POWER_MASTER_FORCE_SCREAM:
+        {
+            // Force Scream and Improved Force Scream both affect
+            // targets in a cone extending from the caster's location.
+            SWFP_HARMFUL = TRUE;
+            SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_SONIC;
+
+            int nDamageRolls = GetHitDice(OBJECT_SELF);
+            int nAttributeDamage;
+            int nIconID;
+            int nShape;
+            float fShapeSize;
+            int nVFXID;
+            location lTargetLoc;
+            if( GetSpellId() == FORCE_POWER_FORCE_SCREAM ) {
+                nAttributeDamage = 2;
+                nIconID = 79;
+                nShape = SHAPE_SPELLCONE;
+                fShapeSize = Sp_CalcRange( 20.0 );
+                nVFXID = 9005;
+                lTargetLoc = GetLocation( GetSpellTarget() );
+            }
+            else if( GetSpellId() == FORCE_POWER_IMPROVED_FORCE_SCREAM ) {
+                nAttributeDamage = 4;
+                nIconID = 80;
+                nShape = SHAPE_SPELLCONE;
+                fShapeSize = Sp_CalcRange( 20.0 );
+                nVFXID = 9006;
+                lTargetLoc = GetLocation( GetSpellTarget() );
+            }
+            else if( GetSpellId() == FORCE_POWER_MASTER_FORCE_SCREAM ) {
+                nAttributeDamage = 6;
+                nIconID = 81;
+                nShape = SHAPE_SPHERE;
+                fShapeSize = Sp_CalcRange( 12.0 );
+                nVFXID = 9007;
+                lTargetLoc = GetLocation( OBJECT_SELF );
+            }
+
+            ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect( nVFXID ), OBJECT_SELF);
+
+            object oTarget = GetFirstObjectInShape(nShape, fShapeSize, lTargetLoc, TRUE, OBJECT_TYPE_CREATURE );
+            while(GetIsObjectValid(oTarget))
+            {
+                int nTotalDamage = Sp_CalcDamage( oTarget, nDamageRolls, 4 );
+
+                // Create the damage effects.
+                eLink1 = EffectDamage( nTotalDamage, DAMAGE_TYPE_SONIC );
+                eLink2 = EffectAbilityDecrease(ABILITY_STRENGTH, nAttributeDamage);
+                eLink2 = EffectLinkEffects(eLink2, EffectAbilityDecrease(ABILITY_DEXTERITY, nAttributeDamage));
+                eLink2 = EffectLinkEffects(eLink2, EffectAbilityDecrease(ABILITY_INTELLIGENCE, nAttributeDamage));
+                eLink2 = EffectLinkEffects(eLink2, EffectAbilityDecrease(ABILITY_WISDOM, nAttributeDamage));
+                eLink2 = EffectLinkEffects(eLink2, EffectAbilityDecrease(ABILITY_CHARISMA, nAttributeDamage));
+                eLink2 = EffectLinkEffects(eLink2, EffectAbilityDecrease(ABILITY_CONSTITUTION, nAttributeDamage));
+                eLink2 = EffectLinkEffects(eLink2, EffectVisualEffect(VFX_IMP_STUN)); // Added stun visual effect
+                eLink2 = SetEffectIcon(eLink2, nIconID);
+
+                // Check resistances.
+                int nResist = Sp_BlockingChecks(oTarget, eLink1, eLink2, eInvalid);
+                SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
+                if( ( GetRacialType(oTarget) != RACIAL_TYPE_DROID ) &&
+                    GetIsEnemy(oTarget) )
+                {
+                    if(nResist == 0)
+                    {
+                        int nSaves = Sp_MySavingThrows(oTarget);
+                        if(nSaves <= 0)
+                        {
+                            // Apply physical damage effect to the target.
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eLink1, oTarget);
+
+                            // Remove any lower level or equal versions of this power.
+                            Sp_RemoveRelatedPowers( oTarget, GetSpellId() );
+
+                            // Do not apply the effects of this power if a more powerful
+                            // version is already attached to the target.
+                            if( !Sp_BetterRelatedPowerExists( oTarget, GetSpellId() ) ) {
+
+                                // Apply the attribute damage effect.
+                                float fDuration = Sp_CalcDuration( 30.0 );
+                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink2, oTarget, fDuration);
+                            }
+                        }
+                        else {
+                            int nApply;
+                            // DJS-OEI 11/20/2003
+                            // If the target has the Evasion feat, the damage on a successful
+                            // save is 0. Otherwise, it's half the original damage.
+                            if( GetHasFeat( FEAT_EVASION, oTarget ) ) {
+                                nApply = 0;
+                            }
+                            else {
+                                nApply = nTotalDamage/2;
+                            }
+
+                            if( nApply > 0 ) {
+                                // The target saved, so the attribute damage is ignored.
+                                // Rebuild the damage effect with the new damage.
+                                eLink1 = EffectDamage( nApply, DAMAGE_TYPE_SONIC );
+                                ApplyEffectToObject(DURATION_TYPE_INSTANT, eLink1, oTarget);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+                    }
+                }
+                oTarget = GetNextObjectInShape(nShape, fShapeSize, lTargetLoc, TRUE, OBJECT_TYPE_CREATURE );
+            }
+        }
+        break;
+
+        case FORCE_POWER_SHOCK:
+        {
+            SWFP_HARMFUL = TRUE;
+            SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            int nDice = GetHitDice(OBJECT_SELF);
+
+            SWFP_DAMAGE = Sp_CalcDamage( oTarget, nDice, 6 );
+            SP_MyPostString(IntToString(SWFP_DAMAGE),5,5,4.0);
+            SWFP_DAMAGE_TYPE = DAMAGE_TYPE_ELECTRICAL;
+            SWFP_DAMAGE_VFX = VFX_PRO_LIGHTNING_S;
+            effect eDamage = EffectDamage(SWFP_DAMAGE, DAMAGE_TYPE_ELECTRICAL);
+            effect eDamage2 = EffectDamage(SWFP_DAMAGE/2, DAMAGE_TYPE_ELECTRICAL);
+
+            int nSaves = Sp_MySavingThrows(oTarget);
+            int nResist = Sp_BlockingChecks(oTarget, eDamage, eInvalid, eInvalid);
+            eLink1 = EffectBeam(2066, OBJECT_SELF, BODY_NODE_HAND); //P.W.(May 19, 2003) Changed to Shock beam effect.
+
+            // Shocked Debuff increases all damage taken by 15 percent
+            eLink2 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 15);
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_COLD, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_LIGHT_SIDE, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_ELECTRICAL, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_FIRE, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 15));
+            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 15));
+            //eLink2 = EffectLinkEffects(eLink2, EffectBeam(2066, oTarget, BODY_NODE_CHEST)); // visual effect for shocked debuff
+
+            SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
+            if(nResist == 0)
+            {
+                // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration);
+                //DelayCommand(0.0, ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration));
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_PRO_LIGHTNING_S), oTarget);
+                if(nSaves == 0)
+                {
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
+
+                    // Remove any lower level or equal versions of this power.
+                    //Sp_RemoveRelatedPowers(oTarget, GetSpellId());
+                    //RemoveEffectByExactMatch(oTarget, eLink2);
+
+                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration);
+
+                    //if(!Sp_BetterRelatedPowerExists( oTarget, GetSpellId()))
+                    //{
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink2, oTarget, 30.0); // Apply Shocked Debuff on failed save
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(VFX_BEAM_LIGHTNING_DARK_S, oTarget, BODY_NODE_CHEST), oTarget, 30.0);
+                    //}
+                }
+                else
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage2, oTarget);
+
+
+            }
+        }
+        break;
+
+        case FORCE_POWER_LIGHTNING:
+        {
+            SWFP_HARMFUL = TRUE;
+            SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
+            SWFP_PRIVATE_SAVE_VERSUS_TYPE = SAVING_THROW_TYPE_ELECTRICAL;
+            int nDice = GetHitDice(OBJECT_SELF);
+
+            float fRange = Sp_CalcRange( 17.0 );
+
+            SWFP_DAMAGE = Sp_CalcDamage( oTarget, nDice, 6 );
+            SWFP_DAMAGE_TYPE = DAMAGE_TYPE_ELECTRICAL;
+            SWFP_DAMAGE_VFX = VFX_PRO_LIGHTNING_L; //1036 - With sound
+            SWFP_SHAPE = SHAPE_SPELLCYLINDER;
+
+            effect eLightning = EffectBeam(VFX_BEAM_LIGHTNING_DARK_L, OBJECT_SELF, BODY_NODE_HAND);
+
+            effect eDam = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
+            object oUse = GetFirstObjectInShape(SWFP_SHAPE, fRange, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE );
+            effect eBump = EffectVisualEffect(SWFP_DAMAGE_VFX);
+
+            // Shocked Debuff increases all damage taken by 20 percent
+            eLink1 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 20);
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_COLD, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_LIGHT_SIDE, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ELECTRICAL, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_FIRE, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 20));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 20));
+
+            while(GetIsObjectValid(oUse))
+            {
+                if(GetIsEnemy(oUse))
+                {
+                    SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
+
+                    int nResist = Sp_BlockingChecks(oUse, eBump, eInvalid, eInvalid);
+                    int nSaves;
+                    if(nResist == 0)
+                    {
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eBump, oUse);
+
+                        nSaves = Sp_MySavingThrows(oUse);
+                        if(nSaves == 0)
+                        {
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
+                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
+                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(2061, oUse, BODY_NODE_CHEST), oUse, 30.0); // visual effect for shocked debuff
+                        }
+                        else
+                        {
+                            SWFP_DAMAGE /= 2;
+                            eDam = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
+                        }
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLightning, oUse, fLightningDuration);
+                    }
+                    else
+                    {
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceResisted(OBJECT_SELF), oTarget);
+                    }
+                }
+                oUse = GetNextObjectInShape(SWFP_SHAPE, fRange, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE );
+            }
+        }
+        break;
+
+        case FORCE_POWER_FORCE_STORM:
+        {
+            SWFP_HARMFUL = TRUE;
+            SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
+
+            float fRange = Sp_CalcRange( 12.0 );
+
+            int nDice = GetHitDice(OBJECT_SELF);
+
+            SWFP_DAMAGE = Sp_CalcDamage( oTarget, nDice, 6 );
+            SWFP_DAMAGE_TYPE = DAMAGE_TYPE_ELECTRICAL;
+            effect eBeam = EffectBeam(2061, OBJECT_SELF, BODY_NODE_HEAD);
+            effect eVis = EffectVisualEffect(VFX_PRO_LIGHTNING_L);
+            effect eForce;
+            effect eDam;
+
+            // Shocked Debuff increases all damage taken by 25 percent
+            eLink1 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 25);
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_COLD, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_LIGHT_SIDE, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ELECTRICAL, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_FIRE, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 25));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 25));
+
+            object oUse = GetFirstObjectInShape(SHAPE_SPHERE, fRange, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE );
+            while(GetIsObjectValid(oUse))
+            {
+                //Make Immunity Checks
+                if(GetIsEnemy(oUse))
+                {
+                    SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
+
+                    int nResist = Sp_BlockingChecks(oUse, eVis, eBeam, eInvalid);
+                    int nSaves;
+                    if(nResist == 0)
+                    {
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oUse);
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBeam, oUse, fLightningDuration);
+
+                        nSaves = Sp_MySavingThrows(oUse);
+                        if(nSaves == 0)
+                        {
+                            eDam = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
+                            eForce = EffectDamageForcePoints(SWFP_DAMAGE);
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eForce, oUse);
+                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
+                            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(2061, oUse, BODY_NODE_CHEST), oUse, 30.0); // Apply visual effect for shocked debuff
+                        }
+                        else
+                        {
+                            eDam = EffectDamage(SWFP_DAMAGE/2, SWFP_DAMAGE_TYPE);
+                            eForce = EffectDamageForcePoints(SWFP_DAMAGE/2);
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
+                            ApplyEffectToObject(DURATION_TYPE_INSTANT, eForce, oUse);
+                        }
+                    }
+                    else
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+                }
+                oUse = GetNextObjectInShape(SHAPE_SPHERE, fRange, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE );
             }
         }
         break;

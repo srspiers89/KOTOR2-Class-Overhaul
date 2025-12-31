@@ -11,5 +11,11 @@ void main()
 
     //ActionUseFeat(101, oTarget);
 
-    ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceJump(oTarget), OBJECT_SELF);
+    // ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceJump(oTarget), OBJECT_SELF);
+
+    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectVisualEffect(2002), OBJECT_SELF, 30.0);
+
+    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(2061, OBJECT_SELF, BODY_NODE_CHEST), OBJECT_SELF, 30.0);
+
+    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING|DAMAGE_TYPE_BLASTER, 50), OBJECT_SELF, 30.0);
 }
