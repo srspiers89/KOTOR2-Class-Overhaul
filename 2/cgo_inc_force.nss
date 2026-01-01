@@ -1,6 +1,8 @@
 // cgo_inc_force.nss
 // Modified & Custom Force Powers for Complete Gameplay Overhaul
 
+#include "cp_inc_debug"
+
 void CGO_RunForcePowers();
 
 // int CGO_CalcDamage(); // Calculates damage for force powers
