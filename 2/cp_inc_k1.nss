@@ -18,6 +18,13 @@ int STANDARD_FACTION_SACRIFICE           = 20;
 // Bitmask value including all valid KOTOR 1 inventory slots 
 int INVENTORY_SLOT_ALL = 0x0003C7BB;
 
+int NPC_JOLEE;
+int NPC_CARTH;
+int NPC_BASTILA;
+int NPC_JUHANI;
+int NPC_MISSION;
+int NPC_ZAALBAR;
+
 // Gets the expected tag of a party member based on their ID number.
 string CP_NPCToTag(int nNPC);
 

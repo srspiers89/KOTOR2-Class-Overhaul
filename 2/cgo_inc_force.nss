@@ -743,18 +743,39 @@ void CGO_RunForcePowers()
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
 
-            // DJS-OEI 3/25/2004
-            SWFP_DAMAGE = Sp_CalcDamage( oTarget, 0, 0, (GetHitDice(OBJECT_SELF)*2)/3 );
-            //SWFP_DAMAGE = (GetHitDice(OBJECT_SELF)*2)/3;
+            SWFP_DAMAGE = GetMaxHitPoints(oTarget) / 5;
             SWFP_DAMAGE_TYPE = DAMAGE_TYPE_BLUDGEONING;
 
             effect eChoke = EffectChoke();
             eChoke = SetEffectIcon(eChoke, 31);
             effect eDamage = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
 
+            // Debuff increases all damage taken by 15 percent
+            eLink1 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 15);
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_COLD, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_LIGHT_SIDE, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ELECTRICAL, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_FIRE, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 15));
+
             int nResist = Sp_BlockingChecks(oTarget, eChoke, eDamage, eInvalid);
             int nSaves;
             SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
+
+            if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) || GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) || GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
+            {
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+                CP_ListEffects(oTarget);
+                break;
+            }
+
             if(nResist == 0)
             {
                 nSaves = Sp_MySavingThrows(oTarget);
@@ -762,15 +783,16 @@ void CGO_RunForcePowers()
                 {
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_IMP_CHOKE), oTarget);
                     ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eChoke, oTarget, 1.0);
-                    int nIdx = 1;
-                    float fDelay;
-                    SP_InterativeDamage(eDamage, 7, oTarget);
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
+                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, 60.0);
                 }
             }
             if(nResist > 0 || nSaves > 0)
             {
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
             }
+
+            CP_ListEffects(oTarget);
         }
         break;
     }

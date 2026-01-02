@@ -38,7 +38,7 @@ void main()
         nShield = SHIELD_ENERGY;
         nIcon = 45;
 
-        effect eDefense = EffectACIncrease(10, AC_ARMOUR_ENCHANTMENT_BONUS);
+        effect eDefense = EffectACIncrease(10, AC_NATURAL_BONUS, DAMAGE_TYPE_SLASHING);
         //eDefense = VersusRacialTypeEffect(eDefense, RACIAL_TYPE_DROID);
         //eDefense = VersusAlignmentEffect(eDefense, ALIGNMENT_NEUTRAL, ALIGNMENT_NEUTRAL);
 
