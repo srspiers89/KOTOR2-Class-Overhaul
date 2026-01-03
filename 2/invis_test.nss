@@ -1,5 +1,7 @@
 // Invisibility Test
 
+#include "cp_inc_debug"
+
 void main()
 {
     object oTarget = GetSpellTargetObject();
@@ -17,5 +19,9 @@ void main()
 
     //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(2061, OBJECT_SELF, BODY_NODE_CHEST), OBJECT_SELF, 30.0);
 
-    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING|DAMAGE_TYPE_BLASTER, 50), OBJECT_SELF, 30.0);
+    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING|DAMAGE_TYPE_BLASTER, 50), OBJECT_SELF, 30.0);
+
+    effect eDamage = EffectDamage(GetMaxHitPoints(oTarget) / 5, DAMAGE_TYPE_BLUDGEONING);
+    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
+    CP_ListEffects(oTarget);
 }
