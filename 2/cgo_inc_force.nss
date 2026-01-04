@@ -669,6 +669,7 @@ void CGO_RunForcePowers()
             int nDice = GetHitDice(OBJECT_SELF);
 
             SWFP_DAMAGE = Sp_CalcDamage( oTarget, nDice, 6 );
+            SWFP_DAMAGE = 1;
             SWFP_DAMAGE_TYPE = DAMAGE_TYPE_ELECTRICAL;
             effect eBeam = EffectBeam(2061, OBJECT_SELF, BODY_NODE_HEAD);
             effect eVis = EffectVisualEffect(VFX_PRO_LIGHTNING_L);
@@ -752,7 +753,7 @@ void CGO_RunForcePowers()
 
             // Debuff increases all damage taken by 15 percent
             eLink1 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 15);
-            /*eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 15));
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 15));
             eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 15));
             eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 15));
             eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 15));
@@ -763,12 +764,13 @@ void CGO_RunForcePowers()
             eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 15));
             eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 15));
             eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 15));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 15));*/
+            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 15));
 
             int nResist = Sp_BlockingChecks(oTarget, eChoke, eDamage, eInvalid);
             int nSaves;
             SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
 
+            // Can only be wounded, choked, killed once
             if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) || GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) || GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
             {
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
@@ -784,7 +786,7 @@ void CGO_RunForcePowers()
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_IMP_CHOKE), oTarget);
                     ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eChoke, oTarget, 1.0);
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
-                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, 1.0);
+                    ApplyEffectToObject(DURATION_TYPE_PERMANENT, eLink1, oTarget);
                 }
             }
             if(nResist > 0 || nSaves > 0)
@@ -840,7 +842,7 @@ void CGO_RunForcePowers()
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_IMP_CHOKE), oTarget);
                     ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eChoke, oTarget, 1.0);
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
-                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, 60.0);
+                    ApplyEffectToObject(DURATION_TYPE_PERMANENT, eLink1, oTarget);
                 }
             }
             if(nResist > 0 || nSaves > 0)
@@ -855,7 +857,7 @@ void CGO_RunForcePowers()
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
 
-            SWFP_DAMAGE = GetMaxHitPoints(oTarget) / 5;
+            SWFP_DAMAGE = GetMaxHitPoints(oTarget) / 4;
             SWFP_DAMAGE_TYPE = DAMAGE_TYPE_BLUDGEONING;
 
             effect eChoke = EffectChoke();
@@ -896,8 +898,7 @@ void CGO_RunForcePowers()
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_IMP_CHOKE), oTarget);
                     ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eChoke, oTarget, 1.0);
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
-                    DelayCommand(60.5, ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget)); // Apply damgage again 60 seconds later
-                    ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, 60.0);
+                    ApplyEffectToObject(DURATION_TYPE_PERMANENT, eLink1, oTarget);
                 }
             }
             if(nResist > 0 || nSaves > 0)
