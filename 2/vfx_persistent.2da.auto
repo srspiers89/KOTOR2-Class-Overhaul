@@ -1,5 +1,0 @@
-label	shape	radius	width	length	onenter	onexit	heartbeat	orientwithground	durationvfx	model01	model02	model03	numact01	numact02	numact03	duration01	duration02	duration03	edgewght01	edgewght02	edgewght03	soundimpact	soundduration	soundcessation	soundoneshot	soundoneshotpercentage	modelmin01	modelmin02	modelmin03	
-VFX_PLOT_AOE_KOR_HEAT	R	****	10	20	****	****	****	0	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	
-VFX_PLOT_AOE_KOR_COLD	R	****	10	20	****	****	****	0	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	
-VFX_PLOT_AOE_KOR_ELECTRICITY	R	****	10	20	****	****	****	0	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	
-VFX_ELITE_SPAWN	C	100	****	****	elite_spawn	****	****	0	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	****	
