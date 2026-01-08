@@ -276,8 +276,9 @@ void CGO_RunForcePowers()
         {
             SWFP_HARMFUL = FALSE;
 
-            int nMultiplier = 1;
-            int nHeal = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
+            // int nMultiplier = 1;
+            int nHeal; // = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
+
 
             effect eVis =  EffectVisualEffect(VFX_IMP_CURE);
             int nCnt = 0;
@@ -298,9 +299,11 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_CURE))
                     {
+                        nHeal = Sp_CalcDamage(oParty, 0, 0, (GetMaxHitPoints(oParty) * 60 / 100));
                         eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 117);
+
                         SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
                         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oParty, 30.0);
@@ -320,8 +323,8 @@ void CGO_RunForcePowers()
         {
             SWFP_HARMFUL = FALSE;
 
-            int nMultiplier = 2;
-            int nHeal = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
+            // int nMultiplier = 2;
+            int nHeal; // = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
 
             effect eVis =  EffectVisualEffect(VFX_IMP_HEAL);
             int nCnt = 0;
@@ -342,9 +345,11 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_HEAL))
                     {
+                        nHeal = Sp_CalcDamage(oParty, 0, 0, (GetMaxHitPoints(oParty) * 80 / 100));
                         eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 118);
+
                         SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
                         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oParty, 30.0);
@@ -364,8 +369,8 @@ void CGO_RunForcePowers()
         {
             SWFP_HARMFUL = FALSE;
 
-            int nMultiplier = 3;
-            int nHeal = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
+            // int nMultiplier = 3;
+            int nHeal; // = ((GetAbilityModifier(ABILITY_WISDOM) + GetAbilityModifier(ABILITY_CHARISMA)) * nMultiplier);
 
             effect eVis =  EffectVisualEffect(VFX_IMP_HEAL);
             int nCnt = 0;
@@ -387,9 +392,11 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_MASTER_HEAL))
                     {
+                        nHeal = Sp_CalcDamage(oParty, 0, 0, GetMaxHitPoints(oParty));
                         eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 119);
+
                         SignalEvent(oParty, EventSpellCastAt(OBJECT_SELF, GetSpellId(), FALSE));
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oParty);
                         ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oParty, 30.0);
