@@ -908,7 +908,9 @@ void CGO_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-            int nDam = GetHitDice(OBJECT_SELF);
+            int nDam = GetHitDice(OBJECT_SELF) / 10;
+            if (nDam < 1)
+                nDam = 1;
 
             SWFP_DAMAGE = Sp_CalcDamage( oTarget, nDam, 4 );
             SWFP_DAMAGE_TYPE= DAMAGE_TYPE_DARK_SIDE;
@@ -917,8 +919,8 @@ void CGO_RunForcePowers()
             effect eBeam = EffectBeam(VFX_BEAM_DRAIN_LIFE, OBJECT_SELF, BODY_NODE_HAND);
             effect eVFX = EffectVisualEffect(SWFP_DAMAGE_VFX);
             //Set up the link to Heal the user by the same amount.
-            effect eHeal;
-            effect eDamage = EffectDamage(SWFP_DAMAGE, DAMAGE_TYPE_DARK_SIDE);
+            effect eHeal = EffectAbilityIncrease(ABILITY_CONSTITUTION, SWFP_DAMAGE);
+            effect eDamage = EffectAbilityDecrease(ABILITY_CONSTITUTION, SWFP_DAMAGE);
 
             ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBeam, oTarget, fLightningDuration);
             DelayCommand(0.3, ApplyEffectToObject(DURATION_TYPE_INSTANT, eVFX, oTarget));
@@ -926,27 +928,25 @@ void CGO_RunForcePowers()
             int nResist = Sp_BlockingChecks(oTarget, eDamage, eInvalid, eInvalid);
 
             SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
-            if(GetRacialType(oTarget) != RACIAL_TYPE_DROID)
+
+            if (GetHasSpellEffect(FORCE_POWER_DRAIN_LIFE, oTarget) || GetHasSpellEffect(FORCE_POWER_DEATH_FIELD, oTarget))
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+
+            else if(GetRacialType(oTarget) != RACIAL_TYPE_DROID)
             {
                 if(nResist == 0)
                 {
                     int nSaves = Sp_MySavingThrows(oTarget);
-                    if(nSaves > 0)
+                    if(nSaves == 0)
                     {
-                        SWFP_DAMAGE /= 2;
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDamage, oTarget, 30.0);
+                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eHeal, OBJECT_SELF, 30.0);
                     }
-                    eDamage = EffectDamage(SWFP_DAMAGE,  DAMAGE_TYPE_DARK_SIDE);
-                    if(GetCurrentHitPoints(OBJECT_SELF) < GetMaxHitPoints(OBJECT_SELF) && SWFP_DAMAGE > 0)
-                    {
-                        eHeal = EffectHeal(SWFP_DAMAGE);
-                        ApplyEffectToObject(DURATION_TYPE_INSTANT, eHeal, OBJECT_SELF);
-                    }
-                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
+                    else
+                        ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
                 }
                 else
-                {
                     ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-                }
             }
         }
         break;

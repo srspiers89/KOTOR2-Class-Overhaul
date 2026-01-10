@@ -16,4 +16,6 @@ void main()
 
         oTarget = GetNextObjectInShape(SHAPE_SPHERE, 18.0, GetLocation(oCaster), FALSE, OBJECT_TYPE_CREATURE);
     }
+
+    JumpToObject(oCaster);
 }

@@ -21,10 +21,13 @@ void main()
 
     //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING|DAMAGE_TYPE_BLASTER, 50), OBJECT_SELF, 30.0);
 
-    effect eDamage = EffectDamage(GetMaxHitPoints(oTarget) / 5, DAMAGE_TYPE_BLUDGEONING);
-    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
-    CP_ListEffects(oTarget);
+    //effect eDamage = EffectDamage(GetMaxHitPoints(oTarget) / 5, DAMAGE_TYPE_BLUDGEONING);
+    //ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
+    //CP_ListEffects(oTarget);
 
-    //effect eDrainLife = EffectAreaOfEffect(3, "default", "default", "default");
-    //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eDrainLife, oTarget, 30.0);
+    //effect eDrainLife = EffectAreaOfEffect(3, "", "drain_life_hb", "");
+    //location lTarget = GetLocation(oTarget);
+    //object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, OBJECT_SELF);
+    //ApplyEffectToObject(DURATION_TYPE_INSTANT, eDrainLife, oTarget);
+    //ApplyEffectAtLocation(DURATION_TYPE_TEMPORARY, eDrainLife, lTarget, 30.0);
 }

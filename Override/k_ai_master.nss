@@ -13,6 +13,7 @@
 #include "k_inc_utility"
 
 #include "diff_balance"
+#include "k_inc_dmg"
 
 void main()
 {
@@ -373,6 +374,9 @@ void main()
                     }
                 }
             }
+
+            OnDamage();
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_DAMAGED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1006));
