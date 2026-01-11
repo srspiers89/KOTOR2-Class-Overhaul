@@ -908,11 +908,11 @@ void CGO_RunForcePowers()
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_FORT;
-            int nDam = GetHitDice(OBJECT_SELF) / 10;
+            int nDam = GetHitDice(OBJECT_SELF) / 6;
             if (nDam < 1)
                 nDam = 1;
 
-            SWFP_DAMAGE = Sp_CalcDamage( oTarget, nDam, 4 );
+            SWFP_DAMAGE = d4(nDam);
             SWFP_DAMAGE_TYPE= DAMAGE_TYPE_DARK_SIDE;
             SWFP_DAMAGE_VFX = VFX_PRO_DRAIN;
             //Set up the drain effect link for the target
@@ -922,6 +922,13 @@ void CGO_RunForcePowers()
             effect eHeal = EffectAbilityIncrease(ABILITY_CONSTITUTION, SWFP_DAMAGE);
             effect eDamage = EffectAbilityDecrease(ABILITY_CONSTITUTION, SWFP_DAMAGE);
 
+            if (GetHasSpellEffect(FORCE_POWER_DRAIN_LIFE, oTarget) || GetHasSpellEffect(FORCE_POWER_DEATH_FIELD, oTarget))
+            {
+                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
+                CP_DebugMsg("You can only drain one target at a time!");
+                break;
+            }
+
             ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBeam, oTarget, fLightningDuration);
             DelayCommand(0.3, ApplyEffectToObject(DURATION_TYPE_INSTANT, eVFX, oTarget));
 
@@ -929,10 +936,7 @@ void CGO_RunForcePowers()
 
             SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
 
-            if (GetHasSpellEffect(FORCE_POWER_DRAIN_LIFE, oTarget) || GetHasSpellEffect(FORCE_POWER_DEATH_FIELD, oTarget))
-                ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-
-            else if(GetRacialType(oTarget) != RACIAL_TYPE_DROID)
+            if(GetRacialType(oTarget) != RACIAL_TYPE_DROID)
             {
                 if(nResist == 0)
                 {
