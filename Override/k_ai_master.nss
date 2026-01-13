@@ -14,6 +14,8 @@
 
 #include "diff_balance"
 #include "k_inc_dmg"
+#include "cgo_inc_onatt"
+#include "k_inc_hb"
 
 void main()
 {
@@ -307,6 +309,7 @@ void main()
             }
 
             Diff_Balance();
+            Enemy_OnAttacked();
         }
         break;
         case 1006: //KOTOR_DEFAULT_EVENT_ON_DAMAGE
@@ -583,6 +586,9 @@ void main()
             {
                 ClearAllActions();
             }
+
+            OnHeartbeat();
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1001));
@@ -750,6 +756,9 @@ void main()
                     SpeakString("GEN_I_WAS_ATTACKED", TALKVOLUME_SILENT_TALK);
                 }
             }
+
+            Enemy_OnAttacked();
+
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_ATTACKED))
             {
                 SignalEvent(OBJECT_SELF, EventUserDefined(1005));

@@ -2,16 +2,51 @@
 //
 // Include file for my feats and force powers that use the onheartbeat event
 
-#include "k_inc_gensupport"
-
 void OnHeartbeat();
 void Resolve();
-void Fury();
 float GetBAB(int nClass);
 void AgainstTheOdds();
 
 void OnHeartbeat()
 {
+    int nClass1 = GetClassByPosition(1, OBJECT_SELF);
+    int nLevel1 = GetLevelByClass(nClass1, OBJECT_SELF);
+    int nClass2 = GetClassByPosition(2, OBJECT_SELF);
+    int nLevel2 = GetLevelByClass(nClass2, OBJECT_SELF);
+
+    effect eEffect = GetFirstEffect(OBJECT_SELF);
+    while (GetIsEffectValid(eEffect))
+    {
+        if (GetEffectType(eEffect) == EFFECT_TYPE_CONCEALMENT)
+            RemoveEffect(OBJECT_SELF, eEffect);
+
+        eEffect = GetNextEffect(OBJECT_SELF);
+    }
+
+    eEffect = EffectMissChance(1);
+
+    switch (nClass1)
+    {
+        case CLASS_TYPE_JEDIGUARDIAN:
+        {
+            AgainstTheOdds();
+
+            // CHA bonus to saves
+            if (nLevel1 >= 2)
+                eEffect = EffectLinkEffects(eEffect, EffectSavingThrowIncrease(SAVING_THROW_ALL, GetAbilityModifier(ABILITY_CHARISMA)));
+        }
+        break;
+
+        case CLASS_TYPE_JEDISENTINEL:
+        {
+            if (nLevel1 >= 1)
+                eEffect = EffectLinkEffects(eEffect, EffectAttackIncrease(GetAbilityModifier(ABILITY_INTELLIGENCE)));
+            if (nLevel1 >= 5)
+                eEffect = EffectLinkEffects(eEffect, EffectDamageIncrease(GetAbilityModifier(ABILITY_INTELLIGENCE)));
+        }
+        break;
+    }
+
     //AgainstTheOdds();
 
     // Guardian lvl 2 feat CHA to Saves
@@ -26,67 +61,7 @@ void OnHeartbeat()
     // if (GetHasFeat())
     //ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectDamageIncrease(GetAbilityModifier(ABILITY_INTELLIGENCE)), OBJECT_SELF, 3.0);
 
-    SetLocalBoolean(OBJECT_SELF, 122, TRUE);
-    DelayCommand(3.05, OnHeartbeat());
-}
-
-void Fury()
-{
-    // effect eStrAdj;
-    effect eDamage;
-    // int nStrength = 6;
-    // float nVPThreshold = IntToFloat(GetCurrentHitPoints(OBJECT_SELF)) / IntToFloat(GetMaxHitPoints(OBJECT_SELF));
-
-    /*
-    if (nVPThreshold <= 0.75 && nVPThreshold > 0.5)
-        nStrength = 4;
-    else if (nVPThreshold <= 0.5 && nVPThreshold > 0.25)
-        nStrength = 6;
-    else if (nVPThreshold <= 0.25 && nVPThreshold > 0.01)
-        nStrength = 8;
-    else if (nVPThreshold <= 0.01)
-        nStrength = 10;
-    */
-
-    eDamage = EffectDamage((GetMaxHitPoints(OBJECT_SELF) / 5));
-
-    if (GetHasSpellEffect(FORCE_POWER_MASTER_FURY))
-    {
-        /* nStrength = nStrength + 4;
-        if ((nStrength - 12) > 0)
-        {
-            eStrAdj = EffectAbilityIncrease(ABILITY_STRENGTH, (nStrength - 12));
-            ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eStrAdj, OBJECT_SELF, 3.0);
-        }
-
-
-        eStrAdj = EffectAbilityIncrease(ABILITY_STRENGTH, nStrength);
-
-        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eStrAdj, OBJECT_SELF, 3.0); */
-        ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, OBJECT_SELF);
-        ExecuteScript("k_hen_damage01", OBJECT_SELF);
-    }
-
-    else if (GetHasSpellEffect(FORCE_POWER_IMPROVED_FURY))
-    {
-        // eStrAdj = EffectAbilityIncrease(ABILITY_STRENGTH, (nStrength + 2));;
-        // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eStrAdj, OBJECT_SELF, 3.0);
-        ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, OBJECT_SELF);
-        ExecuteScript("k_hen_damage01", OBJECT_SELF);
-    }
-
-    else if (GetHasSpellEffect(FORCE_POWER_FURY))
-    {
-        // eStrAdj = EffectAbilityIncrease(ABILITY_STRENGTH, nStrength);
-        // ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eStrAdj, OBJECT_SELF, 3.0);
-        ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, OBJECT_SELF);
-        ExecuteScript("k_hen_damage01", OBJECT_SELF);
-    }
-    else if (GetMinOneHP(OBJECT_SELF))
-    {
-        if (!GetIsConversationActive())
-            SetMinOneHP(OBJECT_SELF, 0);
-    }
+    DelayCommand(0.0, ApplyEffectToObject(DURATION_TYPE_PERMANENT, eEffect, OBJECT_SELF));
 }
 
 float GetBAB(int nClass)

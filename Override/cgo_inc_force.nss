@@ -68,7 +68,7 @@ void CGO_RunForcePowers()
         }
         break;
 
-        case 900: // Force Empathy 284 -> enemies take damage when they attack
+        case 284: // Force Empathy 284 -> enemies take damage when they attack
         {
             SWFP_HARMFUL = TRUE;
             SWFP_PRIVATE_SAVE_TYPE = SAVING_THROW_WILL;
@@ -299,7 +299,7 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_CURE))
                     {
-                        nHeal = Sp_CalcDamage(oParty, 0, 0, (GetMaxHitPoints(oParty) * 60 / 100));
+                        nHeal = Sp_CalcDamage(oParty, 0, 0, (GetMaxHitPoints(oParty) * 60 / 100)) / 10;
                         eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 117);
@@ -345,7 +345,7 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_HEAL))
                     {
-                        nHeal = Sp_CalcDamage(oParty, 0, 0, (GetMaxHitPoints(oParty) * 80 / 100));
+                        nHeal = Sp_CalcDamage(oParty, 0, 0, (GetMaxHitPoints(oParty) * 80 / 100)) / 10;
                         eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 118);
@@ -392,7 +392,7 @@ void CGO_RunForcePowers()
 
                     if (!Sp_BetterRelatedPowerExists( oParty, FORCE_POWER_MASTER_HEAL))
                     {
-                        nHeal = Sp_CalcDamage(oParty, 0, 0, GetMaxHitPoints(oParty));
+                        nHeal = Sp_CalcDamage(oParty, 0, 0, GetMaxHitPoints(oParty)) / 10;
                         eLink1 = EffectRegenerate(nHeal, 3.0);
                         eLink1 = EffectLinkEffects(eLink1, EffectSpellImmunity(5));
                         eLink1 = SetEffectIcon(eLink1, 119);
@@ -539,48 +539,45 @@ void CGO_RunForcePowers()
             SP_MyPostString(IntToString(SWFP_DAMAGE),5,5,4.0);
             SWFP_DAMAGE_TYPE = DAMAGE_TYPE_ELECTRICAL;
             SWFP_DAMAGE_VFX = VFX_PRO_LIGHTNING_S;
-            effect eDamage = EffectDamage(SWFP_DAMAGE, DAMAGE_TYPE_ELECTRICAL);
-            effect eDamage2 = EffectDamage(SWFP_DAMAGE/2, DAMAGE_TYPE_ELECTRICAL);
+            effect eDam;
 
             int nSaves = Sp_MySavingThrows(oTarget);
-            int nResist = Sp_BlockingChecks(oTarget, eDamage, eInvalid, eInvalid);
+            int nResist = Sp_BlockingChecks(oTarget, eDam, eInvalid, eInvalid);
             eLink1 = EffectBeam(2066, OBJECT_SELF, BODY_NODE_HAND); //P.W.(May 19, 2003) Changed to Shock beam effect.
-
-            // Shocked Debuff increases all damage taken by 15 percent
-            eLink2 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 15);
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_COLD, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_LIGHT_SIDE, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_ELECTRICAL, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_FIRE, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 15));
-            eLink2 = EffectLinkEffects(eLink2, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 15));
-            //eLink2 = EffectLinkEffects(eLink2, EffectBeam(2066, oTarget, BODY_NODE_CHEST)); // visual effect for shocked debuff
 
             SignalEvent(oTarget, EventSpellCastAt(OBJECT_SELF, GetSpellId(), SWFP_HARMFUL));
             if(nResist == 0)
             {
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectVisualEffect(VFX_PRO_LIGHTNING_S), oTarget);
+
+                // 20% more damage for each dark side power affecting target
+                if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
+                    SWFP_DAMAGE *= 12 / 10;
+                if (GetHasSpellEffect(FORCE_POWER_FORCE_SCREAM, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_IMPROVED_FORCE_SCREAM, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_MASTER_FORCE_SCREAM, oTarget))
+                    SWFP_DAMAGE *= 12 / 10;
+                if (GetHasSpellEffect(FORCE_POWER_SLOW, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_AFFLICTION, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_PLAGUE, oTarget))
+                    SWFP_DAMAGE *= 12 / 10;
+                if (GetHasSpellEffect(FORCE_POWER_DRAIN_LIFE, oTarget) ||
+                    GetHasSpellEffect(FORCE_POWER_DEATH_FIELD, oTarget))
+                    SWFP_DAMAGE *= 12 / 10;
+
                 if(nSaves == 0)
                 {
-                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget);
-
-                    // Remove any lower level or equal versions of this power.
-                    Sp_RemoveRelatedPowers(oTarget, GetSpellId());
-
-                    if(!Sp_BetterRelatedPowerExists( oTarget, GetSpellId()))
-                    {
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink2, oTarget, 30.0); // Apply Shocked Debuff on failed save
-                        ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(VFX_BEAM_LIGHTNING_DARK_S, oTarget, BODY_NODE_CHEST), oTarget, 30.0);
-                    }
+                    eDam = EffectDamage(SWFP_DAMAGE, DAMAGE_TYPE_ELECTRICAL);
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oTarget);
                 }
                 else
-                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage2, oTarget);
+                {
+                    SWFP_DAMAGE /= 2;
+                    eDam = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
+                    ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oTarget);
+                }
 
                 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oTarget, fLightningDuration);
             }
@@ -603,24 +600,9 @@ void CGO_RunForcePowers()
 
             effect eLightning = EffectBeam(VFX_BEAM_LIGHTNING_DARK_L, OBJECT_SELF, BODY_NODE_HAND);
 
-            effect eDam = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
+            effect eDam;
             object oUse = GetFirstObjectInShape(SWFP_SHAPE, fRange, GetLocation(oTarget), FALSE, OBJECT_TYPE_CREATURE );
             effect eBump = EffectVisualEffect(SWFP_DAMAGE_VFX);
-
-            // Shocked Debuff increases all damage taken by 20 percent
-            eLink1 = EffectDamageImmunityDecrease(DAMAGE_TYPE_BLUDGEONING, 20);
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_PIERCING, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SLASHING, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_UNIVERSAL, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ACID, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_COLD, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_LIGHT_SIDE, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ELECTRICAL, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_FIRE, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_DARK_SIDE, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_SONIC, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_ION, 20));
-            eLink1 = EffectLinkEffects(eLink1, EffectDamageImmunityDecrease(DAMAGE_TYPE_BLASTER, 20));
 
             while(GetIsObjectValid(oUse))
             {
@@ -634,19 +616,28 @@ void CGO_RunForcePowers()
                     {
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, eBump, oUse);
 
+                        // 20% more damage for each dark side power affecting target
+                        if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
+                            SWFP_DAMAGE *= 12 / 10;
+                        if (GetHasSpellEffect(FORCE_POWER_FORCE_SCREAM, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_IMPROVED_FORCE_SCREAM, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_MASTER_FORCE_SCREAM, oTarget))
+                            SWFP_DAMAGE *= 12 / 10;
+                        if (GetHasSpellEffect(FORCE_POWER_SLOW, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_AFFLICTION, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_PLAGUE, oTarget))
+                            SWFP_DAMAGE *= 12 / 10;
+                        if (GetHasSpellEffect(FORCE_POWER_DRAIN_LIFE, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_DEATH_FIELD, oTarget))
+                            SWFP_DAMAGE *= 12 / 10;
+
                         nSaves = Sp_MySavingThrows(oUse);
                         if(nSaves == 0)
                         {
+                            eDam = EffectDamage(SWFP_DAMAGE, SWFP_DAMAGE_TYPE);
                             ApplyEffectToObject(DURATION_TYPE_INSTANT, eDam, oUse);
-
-                            // Remove any lower level or equal versions of this power.
-                            Sp_RemoveRelatedPowers(oUse, GetSpellId());
-
-                            if(!Sp_BetterRelatedPowerExists(oUse, GetSpellId()))
-                            {
-                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eLink1, oUse, 30.0);
-                                ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectBeam(VFX_BEAM_LIGHTNING_DARK_S, oUse, BODY_NODE_CHEST), oUse, 30.0); // visual effect for shocked debuff
-                            }
                         }
                         else
                         {
@@ -697,6 +688,7 @@ void CGO_RunForcePowers()
                     {
                         ApplyEffectToObject(DURATION_TYPE_INSTANT, eVis, oUse);
 
+                        // 20% more damage for each dark side power affecting target
                         if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) ||
                             GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) ||
                             GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
@@ -708,6 +700,9 @@ void CGO_RunForcePowers()
                         if (GetHasSpellEffect(FORCE_POWER_SLOW, oTarget) ||
                             GetHasSpellEffect(FORCE_POWER_AFFLICTION, oTarget) ||
                             GetHasSpellEffect(FORCE_POWER_PLAGUE, oTarget))
+                            SWFP_DAMAGE *= 12 / 10;
+                        if (GetHasSpellEffect(FORCE_POWER_DRAIN_LIFE, oTarget) ||
+                            GetHasSpellEffect(FORCE_POWER_DEATH_FIELD, oTarget))
                             SWFP_DAMAGE *= 12 / 10;
 
                         nSaves = Sp_MySavingThrows(oUse);
