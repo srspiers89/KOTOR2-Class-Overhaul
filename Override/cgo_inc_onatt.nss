@@ -22,14 +22,11 @@ void  Enemy_OnAttacked()
             oCreator = GetEffectCreator(eCheck);
             CP_DebugMsg(GetName(oCreator));
 
-
             AssignCommand(oCreator, DoTheEffect(oSelf, EffectDamage(d3(GetHitDice(OBJECT_SELF)), DAMAGE_TYPE_BLASTER)));
         }
 
         eCheck = GetNextEffect(oAttacker);
     }
-
-    //AssignCommand(GetPartyMemberByIndex(0), ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamage(100), oSelf));
 }
 
 void Hen_OnAttacked()

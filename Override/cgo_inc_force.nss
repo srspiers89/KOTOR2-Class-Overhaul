@@ -765,7 +765,6 @@ void CGO_RunForcePowers()
             if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) || GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) || GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
             {
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-                CP_ListEffects(oTarget);
                 break;
             }
 
@@ -782,8 +781,6 @@ void CGO_RunForcePowers()
             }
             if(nResist > 0 || nSaves > 0)
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-
-            CP_ListEffects(oTarget);
         }
         break;
 
@@ -821,7 +818,6 @@ void CGO_RunForcePowers()
             if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) || GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) || GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
             {
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-                CP_ListEffects(oTarget);
                 break;
             }
 
@@ -838,8 +834,6 @@ void CGO_RunForcePowers()
             }
             if(nResist > 0 || nSaves > 0)
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-
-            CP_ListEffects(oTarget);
         }
         break;
 
@@ -877,7 +871,6 @@ void CGO_RunForcePowers()
             if (GetHasSpellEffect(FORCE_POWER_WOUND, oTarget) || GetHasSpellEffect(FORCE_POWER_CHOKE, oTarget) || GetHasSpellEffect(FORCE_POWER_KILL, oTarget))
             {
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-                CP_ListEffects(oTarget);
                 break;
             }
 
@@ -894,8 +887,6 @@ void CGO_RunForcePowers()
             }
             if(nResist > 0 || nSaves > 0)
                 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectForceFizzle(), OBJECT_SELF);
-
-            CP_ListEffects(oTarget);
         }
         break;
 

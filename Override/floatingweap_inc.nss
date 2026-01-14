@@ -20,18 +20,18 @@ void KillFloater(object oFloater)
 void ReqCheck(int nFPCost, object oCaster)
 {
     int i = 0;
-    object oFloater = GetObjectByTag("LightsaberFloat", i);
+    object oFloater = GetObjectByTag("floatsaber", i);
 
     if (GetIsInCombat(oCaster))
     {
         while (GetIsObjectValid(oFloater))
         {
-            // If caster doesn't have enough force points kill LightsaberFloat
+            // If caster doesn't have enough force points kill floatsaber
             if (GetCurrentForcePoints(oCaster) < nFPCost)
             {
                 KillFloater(oFloater);
                 i++;
-                oFloater = GetObjectByTag("LightsaberFloat", i);
+                oFloater = GetObjectByTag("floatsaber", i);
                 continue;
             }
 
@@ -39,11 +39,11 @@ void ReqCheck(int nFPCost, object oCaster)
 
             // Get next Floater
             i++;
-            oFloater = GetObjectByTag("LightsaberFloat", i);
+            oFloater = GetObjectByTag("floatsaber", i);
         }
     }
 
-    if (GetIsObjectValid(GetObjectByTag("LightsaberFloat")))
+    if (GetIsObjectValid(GetObjectByTag("floatsaber")))
     {
         DelayCommand(3.0, ReqCheck(nFPCost, oCaster));
     }
