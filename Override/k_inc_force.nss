@@ -7083,19 +7083,23 @@ int Sp_BetterRelatedPowerExists( object oTarget, int nPowerID )
             // Heal and Master Heal are better
             nRelatedPowerID1 = FORCE_POWER_HEAL;
             nRelatedPowerID2 = FORCE_POWER_MASTER_HEAL;
+            break;
 
         case FORCE_POWER_HEAL:
             // Master Heal is better
             nRelatedPowerID1 = FORCE_POWER_MASTER_HEAL;
+            break;
 
         case FORCE_POWER_SHOCK:
             // Lightning and Storm are better
             nRelatedPowerID1 = FORCE_POWER_LIGHTNING;
             nRelatedPowerID2 = FORCE_POWER_FORCE_STORM;
+            break;
 
         case FORCE_POWER_LIGHTNING:
             // Storm is better
             nRelatedPowerID1 = FORCE_POWER_FORCE_STORM;
+            break;
 
         case FORCE_POWER_PLAGUE:
         case FORCE_POWER_FORCE_ARMOR:

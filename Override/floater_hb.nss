@@ -18,14 +18,17 @@ void main()
         && GetCommandable())
     {
         object oSummon = GetPartyMemberByIndex(0);
-        if (GetIsObjectValid(oSummon) && (GetDistanceBetween2D(oSummon, OBJECT_SELF) > 2.2)) {
+        if (GetIsObjectValid(oSummon))
+        {
             ClearAllActions();
-            ActionMoveToObject(oSummon, TRUE, 2.0);
+            ActionMoveToObject(oSummon, TRUE);
         }
     }
+    //if (GetCurrentAction(OBJECT_SELF) == ACTION_FOLLOW && GetIsObjectValid(oEnemy))
+    //    ClearAllActions();
 
     if (GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
         SignalEvent(OBJECT_SELF, EventUserDefined(1001));
 
-    DelayCommand(3.0, CombatCheck());
+    //DelayCommand(3.0, CombatCheck());
 }

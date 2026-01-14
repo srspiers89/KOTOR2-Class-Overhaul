@@ -22,22 +22,25 @@ void ReqCheck(int nFPCost, object oCaster)
     int i = 0;
     object oFloater = GetObjectByTag("LightsaberFloat", i);
 
-    while (GetIsObjectValid(oFloater))
+    if (GetIsInCombat(oCaster))
     {
-        // If caster doesn't have enough force points kill LightsaberFloat
-        if (GetCurrentForcePoints(oCaster) < nFPCost)
+        while (GetIsObjectValid(oFloater))
         {
-            KillFloater(oFloater);
+            // If caster doesn't have enough force points kill LightsaberFloat
+            if (GetCurrentForcePoints(oCaster) < nFPCost)
+            {
+                KillFloater(oFloater);
+                i++;
+                oFloater = GetObjectByTag("LightsaberFloat", i);
+                continue;
+            }
+
+            ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamageForcePoints(nFPCost), oCaster);
+
+            // Get next Floater
             i++;
             oFloater = GetObjectByTag("LightsaberFloat", i);
-            continue;
         }
-
-        ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDamageForcePoints(nFPCost), oCaster);
-
-        // Get next Floater
-        i++;
-        oFloater = GetObjectByTag("LightsaberFloat", i);
     }
 
     if (GetIsObjectValid(GetObjectByTag("LightsaberFloat")))

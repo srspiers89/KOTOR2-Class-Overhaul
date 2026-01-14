@@ -587,7 +587,7 @@ void main()
                 ClearAllActions();
             }
 
-            OnHeartbeat();
+            ExecuteScript("cgo_hb", OBJECT_SELF, 5);
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_HEARTBEAT))
             {
@@ -757,7 +757,7 @@ void main()
                 }
             }
 
-            Enemy_OnAttacked();
+            Hen_OnAttacked();
 
             if(GN_GetSpawnInCondition(SW_FLAG_EVENT_ON_ATTACKED))
             {

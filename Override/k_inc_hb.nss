@@ -9,11 +9,6 @@ void AgainstTheOdds();
 
 void OnHeartbeat()
 {
-    int nClass1 = GetClassByPosition(1, OBJECT_SELF);
-    int nLevel1 = GetLevelByClass(nClass1, OBJECT_SELF);
-    int nClass2 = GetClassByPosition(2, OBJECT_SELF);
-    int nLevel2 = GetLevelByClass(nClass2, OBJECT_SELF);
-
     effect eEffect = GetFirstEffect(OBJECT_SELF);
     while (GetIsEffectValid(eEffect))
     {
@@ -25,14 +20,35 @@ void OnHeartbeat()
 
     eEffect = EffectMissChance(1);
 
+    int nClass1 = GetClassByPosition(1, OBJECT_SELF);
+    int nLevel1 = GetLevelByClass(nClass1, OBJECT_SELF);
+    int nClass2 = GetClassByPosition(2, OBJECT_SELF);
+    int nLevel2 = GetLevelByClass(nClass2, OBJECT_SELF);
+
     switch (nClass1)
     {
         case CLASS_TYPE_JEDIGUARDIAN:
         {
-            AgainstTheOdds();
+            // AgainstTheOdds();
+            int nBonus = 0;
+
+            object oEnemy = GetFirstObjectInShape(SHAPE_SPHERE, 30.0, GetLocation(OBJECT_SELF), TRUE, OBJECT_TYPE_CREATURE );
+
+            if (GetIsInCombat())
+            {
+                while (GetIsObjectValid(oEnemy))
+                {
+                    if (GetAttackTarget(oEnemy) == OBJECT_SELF)
+                        nBonus++;
+
+                    oEnemy = GetNextObjectInShape(SHAPE_SPHERE, 30.0, GetLocation(OBJECT_SELF), TRUE, OBJECT_TYPE_CREATURE );
+                }
+            }
+            if (nBonus > 0)
+                eEffect = EffectLinkEffects(eEffect, EffectACIncrease(nBonus, AC_SHIELD_ENCHANTMENT_BONUS));
 
             // CHA bonus to saves
-            if (nLevel1 >= 2)
+            if (nLevel1 >= 1)
                 eEffect = EffectLinkEffects(eEffect, EffectSavingThrowIncrease(SAVING_THROW_ALL, GetAbilityModifier(ABILITY_CHARISMA)));
         }
         break;
